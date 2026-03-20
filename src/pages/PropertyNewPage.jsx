@@ -16,20 +16,20 @@ import { cn } from '@/lib/utils';
 // ─── 상수 ──────────────────────────────────────────────────────────────────
 
 const PRICE_TYPES = [
-  { value: 'MONTHLY_RENT', label: '월세' },
+  { value: 'MONTHLY', label: '월세' },
   { value: 'JEONSE', label: '전세' },
   { value: 'SALE', label: '매매' },
 ];
 
 const PRICE_RATINGS = [
   { value: 'CHEAP', label: '저렴해요' },
-  { value: 'FAIR', label: '적당해요' },
+  { value: 'REASONABLE', label: '적당해요' },
   { value: 'EXPENSIVE', label: '비싸요' },
 ];
 
 const PARKING_OPTIONS = [
   { value: 'AVAILABLE', label: '가능' },
-  { value: 'UNAVAILABLE', label: '불가' },
+  { value: 'NOT_AVAILABLE', label: '불가' },
   { value: 'CONDITIONAL', label: '조건부' },
 ];
 
@@ -45,17 +45,17 @@ const INITIAL_FORM = {
   latitude: null,
   longitude: null,
   rating: 0,
-  priceRating: '',
-  canMoveIn: null,
-  revisitWanted: null,
-  priceType: 'MONTHLY_RENT',
+  priceEvaluation: '',
+  moveInAvailable: null,
+  revisitIntention: null,
+  priceType: 'MONTHLY',
   deposit: '',
   monthlyRent: '',
-  salePrice: '',
+  price: '',
   area: '',
   maintenanceFee: 0,
-  parking: '',
-  floor: '',
+  parkingType: '',
+  currentFloor: '',
   totalFloors: '',
   images: [],
   memo: '',
@@ -298,9 +298,9 @@ const PropertyNewPage = () => {
   const requiredDone = [
     !!form.address,
     form.rating > 0,
-    !!form.priceRating,
-    form.canMoveIn !== null,
-    form.revisitWanted !== null,
+    !!form.priceEvaluation,
+    form.moveInAvailable !== null,
+    form.revisitIntention !== null,
   ].filter(Boolean).length;
   const allRequiredDone = requiredDone === 5;
 
@@ -385,21 +385,20 @@ const PropertyNewPage = () => {
   const buildPayload = () => ({
     imageIds: form.images.map((img) => img.id),
     address: form.address,
-    addressDetail: form.addressDetail || null,
     latitude: form.latitude,
     longitude: form.longitude,
     rating: form.rating || null,
-    priceRating: form.priceRating || null,
-    canMoveIn: form.canMoveIn,
-    revisitWanted: form.revisitWanted,
+    priceEvaluation: form.priceEvaluation || null,
+    moveInAvailable: form.moveInAvailable,
+    revisitIntention: form.revisitIntention,
     priceType: form.priceType,
     deposit: form.deposit ? Number(form.deposit) : null,
     monthlyRent: form.monthlyRent ? Number(form.monthlyRent) : null,
-    salePrice: form.salePrice ? Number(form.salePrice) : null,
+    price: form.price ? Number(form.price) : null,
     area: form.area ? Number(form.area) : null,
     maintenanceFee: form.maintenanceFee || null,
-    parking: form.parking || null,
-    floor: form.floor ? Number(form.floor) : null,
+    parkingType: form.parkingType || null,
+    currentFloor: form.currentFloor ? Number(form.currentFloor) : null,
     totalFloors: form.totalFloors ? Number(form.totalFloors) : null,
     memo: form.memo || null,
   });
@@ -550,8 +549,8 @@ const PropertyNewPage = () => {
                 {PRICE_RATINGS.map(({ value, label }) => (
                   <ChipButton
                     key={value}
-                    active={form.priceRating === value}
-                    onClick={() => set('priceRating', form.priceRating === value ? '' : value)}
+                    active={form.priceEvaluation === value}
+                    onClick={() => set('priceEvaluation', form.priceEvaluation === value ? '' : value)}
                     className="flex-1"
                   >
                     {label}
@@ -567,15 +566,15 @@ const PropertyNewPage = () => {
               </p>
               <div className="flex gap-2">
                 <ChipButton
-                  active={form.canMoveIn === true}
-                  onClick={() => set('canMoveIn', form.canMoveIn === true ? null : true)}
+                  active={form.moveInAvailable === true}
+                  onClick={() => set('moveInAvailable', form.moveInAvailable === true ? null : true)}
                   className="flex-1"
                 >
                   가능
                 </ChipButton>
                 <ChipButton
-                  active={form.canMoveIn === false}
-                  onClick={() => set('canMoveIn', form.canMoveIn === false ? null : false)}
+                  active={form.moveInAvailable === false}
+                  onClick={() => set('moveInAvailable', form.moveInAvailable === false ? null : false)}
                   className="flex-1"
                 >
                   불가
@@ -590,15 +589,15 @@ const PropertyNewPage = () => {
               </p>
               <div className="flex gap-2">
                 <ChipButton
-                  active={form.revisitWanted === true}
-                  onClick={() => set('revisitWanted', form.revisitWanted === true ? null : true)}
+                  active={form.revisitIntention === true}
+                  onClick={() => set('revisitIntention', form.revisitIntention === true ? null : true)}
                   className="flex-1"
                 >
                   있음
                 </ChipButton>
                 <ChipButton
-                  active={form.revisitWanted === false}
-                  onClick={() => set('revisitWanted', form.revisitWanted === false ? null : false)}
+                  active={form.revisitIntention === false}
+                  onClick={() => set('revisitIntention', form.revisitIntention === false ? null : false)}
                   className="flex-1"
                 >
                   없음
@@ -635,7 +634,7 @@ const PropertyNewPage = () => {
             {/* 가격 */}
             <div>
               <p className="mb-2 text-sm font-medium text-slate-700">가격 (만원)</p>
-              {form.priceType === 'MONTHLY_RENT' && (
+              {form.priceType === 'MONTHLY' && (
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <p className="mb-1 text-xs text-slate-400">보증금</p>
@@ -658,7 +657,7 @@ const PropertyNewPage = () => {
               )}
               {form.priceType === 'SALE' && (
                 <input type="text" inputMode="numeric" placeholder="80000"
-                  value={form.salePrice} onChange={numInput('salePrice')}
+                  value={form.price} onChange={numInput('price')}
                   className="h-11 w-full rounded-xl border border-slate-200 px-4 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400" />
               )}
             </div>
@@ -701,8 +700,8 @@ const PropertyNewPage = () => {
                 {PARKING_OPTIONS.map(({ value, label }) => (
                   <ChipButton
                     key={value}
-                    active={form.parking === value}
-                    onClick={() => set('parking', form.parking === value ? '' : value)}
+                    active={form.parkingType === value}
+                    onClick={() => set('parkingType', form.parkingType === value ? '' : value)}
                     className="flex-1"
                   >
                     {label}
@@ -716,7 +715,7 @@ const PropertyNewPage = () => {
               <p className="mb-2 text-sm font-medium text-slate-700">층수</p>
               <div className="flex items-center gap-2">
                 <input type="text" inputMode="numeric" placeholder="현재층"
-                  value={form.floor} onChange={numInput('floor')}
+                  value={form.currentFloor} onChange={numInput('currentFloor')}
                   className="h-11 w-full rounded-xl border border-slate-200 px-4 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400" />
                 <span className="text-slate-400">/</span>
                 <input type="text" inputMode="numeric" placeholder="전체층"

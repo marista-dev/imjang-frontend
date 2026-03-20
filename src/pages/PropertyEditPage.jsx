@@ -12,14 +12,14 @@ import { Spinner } from '@/components/Spinner';
 import { cn } from '@/lib/utils';
 
 const PRICE_TYPES = [
-  { value: 'MONTHLY_RENT', label: '월세' },
+  { value: 'MONTHLY', label: '월세' },
   { value: 'JEONSE', label: '전세' },
   { value: 'SALE', label: '매매' },
 ];
 
 const PRICE_RATINGS = [
   { value: 'CHEAP', label: '저렴해요', emoji: '😊' },
-  { value: 'FAIR', label: '적당해요', emoji: '😐' },
+  { value: 'REASONABLE', label: '적당해요', emoji: '😐' },
   { value: 'EXPENSIVE', label: '비싸요', emoji: '😮' },
 ];
 
@@ -133,19 +133,19 @@ const PropertyEditPage = () => {
   const [images, setImages] = useState([]);
   const [address, setAddress] = useState('');
   const [addressDetail, setAddressDetail] = useState('');
-  const [priceType, setPriceType] = useState('MONTHLY_RENT');
+  const [priceType, setPriceType] = useState('MONTHLY');
   const [deposit, setDeposit] = useState('');
   const [monthlyRent, setMonthlyRent] = useState('');
-  const [salePrice, setSalePrice] = useState('');
+  const [price, setPrice] = useState('');
   const [area, setArea] = useState('');
-  const [floor, setFloor] = useState('');
+  const [currentFloor, setCurrentFloor] = useState('');
   const [totalFloors, setTotalFloors] = useState('');
   const [rating, setRating] = useState(0);
-  const [priceRating, setPriceRating] = useState('');
+  const [priceEvaluation, setPriceEvaluation] = useState('');
   const [checkItems, setCheckItems] = useState({});
   const [surroundings, setSurroundings] = useState([]);
-  const [canMoveIn, setCanMoveIn] = useState(false);
-  const [revisitWanted, setRevisitWanted] = useState(false);
+  const [moveInAvailable, setMoveInAvailable] = useState(false);
+  const [revisitIntention, setRevisitIntention] = useState(false);
   const [memo, setMemo] = useState('');
 
   // 기존 데이터 프리필
@@ -154,19 +154,19 @@ const PropertyEditPage = () => {
     setImages(property.images ?? []);
     setAddress(property.address ?? '');
     setAddressDetail(property.addressDetail ?? '');
-    setPriceType(property.priceType ?? 'MONTHLY_RENT');
+    setPriceType(property.priceType ?? 'MONTHLY');
     setDeposit(property.deposit != null ? String(property.deposit) : '');
     setMonthlyRent(property.monthlyRent != null ? String(property.monthlyRent) : '');
-    setSalePrice(property.salePrice != null ? String(property.salePrice) : '');
+    setPrice(property.price != null ? String(property.price) : '');
     setArea(property.area != null ? String(property.area) : '');
-    setFloor(property.floor != null ? String(property.floor) : '');
+    setCurrentFloor(property.currentFloor != null ? String(property.currentFloor) : '');
     setTotalFloors(property.totalFloors != null ? String(property.totalFloors) : '');
     setRating(property.rating ?? 0);
-    setPriceRating(property.priceRating ?? '');
+    setPriceEvaluation(property.priceEvaluation ?? '');
     setCheckItems(property.checkItems ?? {});
     setSurroundings(property.surroundings ?? []);
-    setCanMoveIn(property.canMoveIn ?? false);
-    setRevisitWanted(property.revisitWanted ?? false);
+    setMoveInAvailable(property.moveInAvailable ?? false);
+    setRevisitIntention(property.revisitIntention ?? false);
     setMemo(property.memo ?? '');
   }, [property]);
 
@@ -193,16 +193,16 @@ const PropertyEditPage = () => {
       priceType,
       deposit: deposit ? Number(deposit) : null,
       monthlyRent: monthlyRent ? Number(monthlyRent) : null,
-      salePrice: salePrice ? Number(salePrice) : null,
+      price: price ? Number(price) : null,
       area: area ? Number(area) : null,
-      floor: floor ? Number(floor) : null,
+      currentFloor: currentFloor ? Number(currentFloor) : null,
       totalFloors: totalFloors ? Number(totalFloors) : null,
       rating: rating || null,
-      priceRating: priceRating || null,
+      priceEvaluation: priceEvaluation || null,
       checkItems,
       surroundings,
-      canMoveIn,
-      revisitWanted,
+      moveInAvailable,
+      revisitIntention,
       memo: memo || null,
     });
   };
@@ -297,7 +297,7 @@ const PropertyEditPage = () => {
             </Tabs.List>
           </Tabs.Root>
 
-          {priceType === 'MONTHLY_RENT' && (
+          {priceType === 'MONTHLY' && (
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="mb-1 block text-xs text-slate-500">보증금 (만원)</label>
@@ -321,7 +321,7 @@ const PropertyEditPage = () => {
           {priceType === 'SALE' && (
             <div>
               <label className="mb-1 block text-xs text-slate-500">매매가 (만원)</label>
-              <input type="text" inputMode="numeric" placeholder="80000" value={salePrice} onChange={numInput(setSalePrice)}
+              <input type="text" inputMode="numeric" placeholder="80000" value={price} onChange={numInput(setPrice)}
                 className="h-12 w-full rounded-xl border border-slate-200 px-4 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400" />
             </div>
           )}
@@ -338,7 +338,7 @@ const PropertyEditPage = () => {
             </div>
             <div>
               <label className="mb-1 block text-xs text-slate-500">층수</label>
-              <input type="text" inputMode="numeric" placeholder="3" value={floor} onChange={numInput(setFloor)}
+              <input type="text" inputMode="numeric" placeholder="3" value={currentFloor} onChange={numInput(setCurrentFloor)}
                 className="h-12 w-full rounded-xl border border-slate-200 px-4 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400" />
             </div>
             <div>
@@ -365,10 +365,10 @@ const PropertyEditPage = () => {
             <div className="flex gap-2">
               {PRICE_RATINGS.map(({ value, label, emoji }) => (
                 <button key={value} type="button"
-                  onClick={() => setPriceRating((prev) => (prev === value ? '' : value))}
+                  onClick={() => setPriceEvaluation((prev) => (prev === value ? '' : value))}
                   className={cn(
                     'flex flex-1 flex-col items-center gap-1 rounded-xl border py-3 text-xs font-medium transition-all active:scale-[0.97]',
-                    priceRating === value
+                    priceEvaluation === value
                       ? 'border-primary bg-primary-50 text-primary'
                       : 'border-slate-200 bg-white text-slate-500',
                   )}
@@ -424,15 +424,15 @@ const PropertyEditPage = () => {
           <div className="space-y-3 pt-1">
             <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3">
               <p className="text-sm font-medium text-slate-800">즉시 입주 가능</p>
-              <Switch.Root checked={canMoveIn} onCheckedChange={setCanMoveIn}
-                className={cn('relative h-6 w-11 rounded-full transition-colors', canMoveIn ? 'bg-primary' : 'bg-slate-200')}>
+              <Switch.Root checked={moveInAvailable} onCheckedChange={setMoveInAvailable}
+                className={cn('relative h-6 w-11 rounded-full transition-colors', moveInAvailable ? 'bg-primary' : 'bg-slate-200')}>
                 <Switch.Thumb className="block h-5 w-5 translate-x-0.5 rounded-full bg-white shadow transition-transform data-[state=checked]:translate-x-[22px]" />
               </Switch.Root>
             </div>
             <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3">
               <p className="text-sm font-medium text-slate-800">재방문 의향 있음</p>
-              <Switch.Root checked={revisitWanted} onCheckedChange={setRevisitWanted}
-                className={cn('relative h-6 w-11 rounded-full transition-colors', revisitWanted ? 'bg-primary' : 'bg-slate-200')}>
+              <Switch.Root checked={revisitIntention} onCheckedChange={setRevisitIntention}
+                className={cn('relative h-6 w-11 rounded-full transition-colors', revisitIntention ? 'bg-primary' : 'bg-slate-200')}>
                 <Switch.Thumb className="block h-5 w-5 translate-x-0.5 rounded-full bg-white shadow transition-transform data-[state=checked]:translate-x-[22px]" />
               </Switch.Root>
             </div>
