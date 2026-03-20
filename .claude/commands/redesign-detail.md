@@ -224,6 +224,192 @@ PropertyDetailPage.jsx를 Figma 디자인 기반으로 전면 재설계해.
 
 ---
 
+---
+
+## UI/UX 디자인 강화 사항 (현재 페이지가 심심한 이유 + 해결)
+
+현재 페이지는 모든 섹션이 flat text로 나열되어 있고, 카드/색상/아이콘 강조 없이 단조로움.
+아래 개선사항을 **반드시** 적용해서 Figma 디자인 수준으로 만들 것.
+
+### 1. 히어로 이미지: 그라데이션 오버레이 + 텍스트 오버레이
+현재: 이미지 아래에 텍스트가 분리되어 있음.
+변경: 이미지 **위에** 그라데이션 + 주소/가격 오버레이.
+```css
+/* 히어로 이미지 영역 */
+.hero-image {
+  position: relative;
+  height: 280px; /* 고정 높이 */
+  overflow: hidden;
+}
+.hero-gradient {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60%;
+  background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+}
+.hero-text {
+  position: absolute;
+  bottom: 0;
+  padding: 20px;
+  color: white;
+}
+```
+- 주소: `text-white text-lg font-bold`
+- 가격: `text-primary-300 text-2xl font-bold` (초록색 강조)
+- 별점 + 면적/층수: `text-white/80 text-sm`
+
+### 2. 교통 정보: 카드 스타일
+현재: 텍스트만 나열.
+변경: 각 교통수단을 카드로 감싸기.
+```jsx
+<div className="rounded-2xl bg-slate-50 p-4 flex items-center gap-3">
+  <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+    <Train size={20} className="text-blue-600" />
+  </div>
+  <div>
+    <p className="font-semibold text-slate-800">장한평역 5호선</p>
+    <p className="text-xs text-slate-500">도보 7분 · 546m</p>
+  </div>
+</div>
+```
+
+### 3. 편의시설: 아이콘 배경 원 + 구조화된 리스트
+현재: 단순 텍스트 나열.
+변경: 각 시설마다 아이콘 원 + 시설명 + 개수(badge) + 도보시간.
+```jsx
+<div className="flex items-start gap-3 py-3">
+  {/* 아이콘 원 */}
+  <div className="w-9 h-9 rounded-full bg-emerald-50 flex items-center justify-center flex-shrink-0">
+    <Store size={18} className="text-emerald-600" />
+  </div>
+  {/* 정보 */}
+  <div className="flex-1">
+    <div className="flex items-center justify-between">
+      <span className="font-semibold text-sm text-slate-800">편의점</span>
+      <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">15개</span>
+    </div>
+    <p className="text-xs text-slate-500 mt-0.5">CU 장한평스타힐스점</p>
+    <p className="text-xs text-slate-400">도보 1분</p>
+  </div>
+</div>
+```
+카테고리별 아이콘 색상:
+- 편의점 (CS2): bg-emerald-50, text-emerald-600
+- 대형마트 (MT1): bg-orange-50, text-orange-600
+- 은행 (BK9): bg-blue-50, text-blue-600
+- 병원 (HP8): bg-red-50, text-red-600
+- 약국 (PM9): bg-purple-50, text-purple-600
+
+### 4. 체크리스트: 카드 + 색상 배지
+현재: 단순 텍스트 + 아이콘.
+변경: 각 항목을 상태 카드로, 긍정/부정 색상 구분.
+```jsx
+{/* 긍정 항목 */}
+<div className="flex items-center gap-2.5 py-2">
+  <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center">
+    <Check size={14} className="text-emerald-600" />
+  </div>
+  <span className="text-sm text-slate-700">즉시 입주 가능</span>
+</div>
+{/* 부정 항목 */}
+<div className="flex items-center gap-2.5 py-2">
+  <div className="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center">
+    <X size={14} className="text-red-500" />
+  </div>
+  <span className="text-sm text-slate-700">주차 불가</span>
+</div>
+```
+- "체크리스트 수정하기" 버튼: `rounded-full border border-primary text-primary px-4 py-2` (Figma의 파란색 테두리 버튼)
+
+### 5. 주변환경: 칩 태그 스타일
+현재: 없음.
+변경: 선택된 환경 태그는 초록색 배경, 미선택은 회색.
+```jsx
+<div className="flex flex-wrap gap-2">
+  {/* 선택된 태그 */}
+  <span className="bg-primary/10 text-primary border border-primary/20 rounded-full px-3 py-1.5 text-xs font-medium">
+    ✓ 조용함
+  </span>
+  {/* 미선택 태그 */}
+  <span className="bg-slate-100 text-slate-400 rounded-full px-3 py-1.5 text-xs">
+    번화가
+  </span>
+</div>
+```
+
+### 6. 매물 정보 요약 카드 (Figma 참조)
+Figma에서 가격 아래에 `25평 · 5/15층 · 남향` 처럼 요약 정보를 한 줄로 표시.
+```jsx
+<p className="text-white/70 text-sm mt-1">
+  {area && `${area}m²`}
+  {floor && ` · ${floor}/${totalFloors}층`}
+</p>
+```
+
+### 7. 섹션 헤더: 아이콘 + bold + 색상
+현재: 단순 이모지 + 텍스트.
+변경: Lucide 아이콘 + 색상 강조.
+```jsx
+{/* 섹션 헤더 컴포넌트 */}
+const SectionHeader = ({ icon: Icon, title, iconColor = 'text-slate-700' }) => (
+  <div className="flex items-center gap-2 mb-4">
+    <Icon size={20} className={iconColor} />
+    <h3 className="text-base font-bold text-slate-800">{title}</h3>
+  </div>
+);
+
+// 사용
+<SectionHeader icon={Bus} title="교통 정보" iconColor="text-blue-600" />
+<SectionHeader icon={Building2} title="편의시설" iconColor="text-emerald-600" />
+<SectionHeader icon={ClipboardCheck} title="체크리스트 검토" iconColor="text-amber-600" />
+<SectionHeader icon={Trees} title="주변환경" iconColor="text-green-600" />
+<SectionHeader icon={StickyNote} title="메모" iconColor="text-slate-600" />
+<SectionHeader icon={Camera} title="사진" iconColor="text-indigo-600" />
+```
+
+### 8. 사진 섹션: 그리드 + 추가 버튼
+현재: 단일 이미지.
+변경: 3칸 가로 그리드 + "+ 추가" 버튼.
+```jsx
+<div className="grid grid-cols-3 gap-2">
+  {images.map(img => (
+    <div className="aspect-square rounded-xl overflow-hidden bg-slate-100">
+      <img src={typeof img === 'string' ? img : img.url} className="w-full h-full object-cover" />
+    </div>
+  ))}
+  {/* 추가 버튼 */}
+  <button className="aspect-square rounded-xl border-2 border-dashed border-slate-300 flex items-center justify-center">
+    <Plus size={24} className="text-slate-400" />
+  </button>
+</div>
+```
+
+### 9. 방문일 표시: 하단 부드러운 디자인
+현재: 단순 텍스트.
+변경: 하단에 subtle 배경 + 아이콘.
+```jsx
+<div className="mt-6 py-3 text-center">
+  <p className="text-xs text-slate-400">
+    📅 방문일: {formatDate(createdAt)}
+  </p>
+</div>
+```
+
+### 10. 공유하기 버튼 디자인
+현재: 단순 테두리 버튼.
+변경: Figma처럼 깔끔한 버튼.
+```jsx
+<button className="w-full py-2.5 rounded-xl border border-slate-200 text-sm text-slate-600 
+  flex items-center justify-center gap-2 active:bg-slate-50">
+  <Share2 size={16} />
+  공유하기
+</button>
+```
+
+---
+
 ## 변경 파일
 
 1. **`src/pages/PropertyDetailPage.jsx`** — 전면 재작성
