@@ -299,7 +299,149 @@ export const normalizeProperty = (p) => ({
 
 ---
 
-## 이슈 15: 지도 마커 안 보임 (markers 빈 배열)
+## 이슈 15: 상세 페이지 locationInfo 주변 시설 표시
+
+**원인**: 백엔드가 `locationInfo` 객체로 주변 시설 데이터를 보내주는데,
+프론트엔드가 이 구조를 제대로 파싱/렌더링하지 못함.
+
+**백엔드 실제 응답 구조**:
+```json
+"locationInfo": {
+  "subway": {
+    "nearestStation": "장한평역 5호선",
+    "distance": 546,
+    "walkTime": 7
+  },
+  "bus": null,
+  "amenities": [
+    {
+      "category": "편의점",
+      "categoryCode": "CS2",
+      "count": 15,
+      "nearestName": "CU 장한평스타힐스점",
+      "nearestDistance": 19
+    },
+    {
+      "category": "대형마트",
+      "categoryCode": "MT1",
+      "count": 1,
+      "nearestName": "더드림식자재마트",
+      "nearestDistance": 332
+    },
+    {
+      "category": "은행",
+      "categoryCode": "BK9",
+      "count": 15,
+      "nearestName": "CU 장한평지바트점 ATM",
+      "nearestDistance": 21
+    },
+    {
+      "category": "병원",
+      "categoryCode": "HP8",
+      "count": 15,
+      "nearestName": "한양정형외과의원",
+      "nearestDistance": 139
+    },
+    {
+      "category": "약국",
+      "categoryCode": "PM9",
+      "count": 5,
+      "nearestName": "4층현약국",
+      "nearestDistance": 335
+    }
+  ]
+}
+```
+
+**수정**: PropertyDetailPage에서 locationInfo를 제대로 파싱해서 표시:
+
+교통 정보 섹션:
+```jsx
+{property.locationInfo?.subway && (
+  <div>
+    <span>🚇 지하철</span>
+    <span>{property.locationInfo.subway.nearestStation}</span>
+    <span>{property.locationInfo.subway.distance}m · 도보 {property.locationInfo.subway.walkTime}분</span>
+  </div>
+)}
+{property.locationInfo?.bus && (
+  <div>
+    <span>🚌 버스</span>
+    <span>{property.locationInfo.bus.nearestStop}</span>
+    <span>{property.locationInfo.bus.distance}m</span>
+  </div>
+)}
+```
+
+편의시설 섹션:
+```jsx
+{property.locationInfo?.amenities?.map((a) => (
+  <div key={a.categoryCode}>
+    <span>{getCategoryIcon(a.categoryCode)} {a.category}</span>
+    <span>{a.nearestName} {a.nearestDistance}m</span>
+    <span>주변 {a.count}개</span>
+  </div>
+))}
+```
+
+카테고리 아이콘 매핑 (Lucide 아이콘 사용):
+```js
+const CATEGORY_ICONS = {
+  CS2: Store,       // 편의점
+  MT1: ShoppingCart, // 대형마트
+  BK9: Landmark,    // 은행
+  HP8: Hospital,    // 병원 (Cross 또는 Hospital)
+  PM9: Pill,        // 약국
+};
+```
+
+`locationInfo`가 `null`일 수 있음 (위치 prefetch가 아직 완료되지 않은 경우).
+이 경우 "주변 시설 정보를 불러오는 중..." 또는 섹션 자체를 숨김.
+
+---
+
+## 이슈 16: 상세 페이지 전체 필드 매핑 종합 (백엔드 실제 응답 기준)
+
+**백엔드 detail API 실제 응답 필드 전체 목록**:
+```
+id                          → property.id (OK)
+address                     → property.address (OK)
+createdAt                   → property.createdAt (프론트: visitedAt으로 사용)
+priceType                   → property.priceType (OK, "JEONSE"/"MONTHLY_RENT"/"SALE")
+deposit                     → property.deposit (보증금/전세금, 만원)
+monthlyRent                 → property.monthlyRent (월세, 만원)
+price                       → property.salePrice로 매핑 필요 (매매가)
+maintenanceFee              → property.maintenanceFee (관리비, 만원)
+area                        → property.area (m²)
+currentFloor                → property.floor로 매핑 필요
+totalFloor                  → property.totalFloors로 매핑 필요
+rating                      → property.rating (1~5)
+images                      → 문자열 배열 ["/temp-images/..."] → [{id, url}]로 변환
+evaluation.moveInAvailable  → property.canMoveIn
+evaluation.revisitIntention → property.revisitWanted
+evaluation.priceEvaluation  → property.priceRating ("REASONABLE"/"EXPENSIVE"/"CHEAP")
+parkingType                 → property.parkingType ("AVAILABLE"/"NOT_AVAILABLE"/"CONDITIONAL")
+environments                → property.environments (배열)
+memo                        → property.memo (문자열 or null)
+locationInfo                → 위 이슈 15의 구조로 렌더링
+```
+
+PropertyDetailPage에서 `normalizeProperty()` 적용 후 렌더링하되,
+`locationInfo`는 정규화하지 않고 그대로 사용 (구조가 이미 명확하므로).
+
+`priceEvaluation` 값 매핑:
+- "REASONABLE" → "적정해요" (FAIR)
+- "EXPENSIVE" → "비싸요"
+- "CHEAP" → "저렴해요"
+
+`parkingType` 값 매핑:
+- "AVAILABLE" → "주차 가능"
+- "NOT_AVAILABLE" → "주차 불가"
+- "CONDITIONAL" → "조건부 주차"
+
+---
+
+## 이슈 17: 지도 마커 안 보임 (markers 빈 배열)
 
 **원인**: 매물에 위도/경도가 저장되어 있지 않음.
 빠른 기록에서 "현재 위치 사용" / "지도에서 선택" 시 latitude/longitude를
