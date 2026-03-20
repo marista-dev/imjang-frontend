@@ -7,7 +7,7 @@ import { authApi } from '@/api/auth';
 import { Spinner } from '@/components/Spinner';
 import { cn } from '@/lib/utils';
 
-const OTP_LENGTH = 6;
+const OTP_LENGTH = 4;
 
 const VerifyEmailPage = () => {
   const navigate = useNavigate();
