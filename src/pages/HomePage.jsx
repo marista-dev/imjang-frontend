@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Map, Clock, ChevronRight, Home, BookOpen } from 'lucide-react';
+import { Plus, ChevronRight, Home, BookOpen } from 'lucide-react';
 import { propertyApi } from '@/api/property';
 import { useAuthStore } from '@/store/useAuthStore';
 import { PropertyCard } from '@/components/PropertyCard';
@@ -56,33 +56,6 @@ const HomePage = () => {
               <span className="text-sm font-medium text-slate-500 ml-1">개</span>
             )}
           </p>
-        </div>
-      </div>
-
-      {/* 퀵 액션 */}
-      <div className="mb-6">
-        <h2 className="mb-3 text-sm font-semibold text-slate-500 uppercase tracking-wide">빠른 시작</h2>
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            type="button"
-            onClick={() => navigate('/map')}
-            className="flex flex-col items-center gap-2 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-all active:scale-[0.97]"
-          >
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-50">
-              <Map size={22} className="text-blue-500" />
-            </div>
-            <span className="text-xs font-medium text-slate-700">지도 보기</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate('/timeline')}
-            className="flex flex-col items-center gap-2 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-all active:scale-[0.97]"
-          >
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-50">
-              <Clock size={22} className="text-amber-500" />
-            </div>
-            <span className="text-xs font-medium text-slate-700">타임라인</span>
-          </button>
         </div>
       </div>
 

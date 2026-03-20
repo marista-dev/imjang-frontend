@@ -306,6 +306,11 @@ const PropertyNewPage = () => {
   ].filter(Boolean).length;
   const allRequiredDone = requiredDone === 5;
 
+  // 위치 확정 시 prefetch (fire-and-forget)
+  const firePrefetch = (address, latitude, longitude) => {
+    propertyApi.prefetchLocation({ address, latitude, longitude }).catch(() => {});
+  };
+
   // 다음 주소 검색
   const handleAddressSearch = () => {
     if (!window.daum?.Postcode) {
@@ -314,7 +319,9 @@ const PropertyNewPage = () => {
     }
     new window.daum.Postcode({
       oncomplete: (data) => {
-        set('address', data.roadAddress || data.jibunAddress);
+        const addr = data.roadAddress || data.jibunAddress;
+        set('address', addr);
+        firePrefetch(addr, null, null);
       },
     }).open();
   };
@@ -344,6 +351,7 @@ const PropertyNewPage = () => {
               result[0]?.road_address?.address_name ||
               result[0]?.address?.address_name;
             setForm((prev) => ({ ...prev, address: addr, latitude, longitude }));
+            firePrefetch(addr, latitude, longitude);
           } else {
             toast.error('주소를 찾을 수 없어요.');
           }
@@ -361,6 +369,7 @@ const PropertyNewPage = () => {
   // 지도 위치 확정
   const handleMapConfirm = ({ address, lat, lng }) => {
     setForm((prev) => ({ ...prev, address, latitude: lat, longitude: lng }));
+    firePrefetch(address, lat, lng);
     setMapSelectOpen(false);
   };
 
