@@ -31,7 +31,7 @@ export const ImageUploader = ({
           const uploaded = res.data;
           onImagesChange((prev) => [
             ...prev,
-            { id: uploaded.id, url: uploaded.url },
+            { id: uploaded.imageId, url: uploaded.thumbnailUrl },
           ]);
         } catch (err) {
           toast.error('이미지 업로드에 실패했어요.');

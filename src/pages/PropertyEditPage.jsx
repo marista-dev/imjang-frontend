@@ -68,7 +68,7 @@ const EditImageSection = ({ propertyId, images, onImagesChange }) => {
       }
       try {
         const res = await imageApi.addToProperty(propertyId, file);
-        onImagesChange((prev) => [...prev, { id: res.data.id, url: res.data.url }]);
+        onImagesChange((prev) => [...prev, { id: res.data.imageId, url: res.data.thumbnailUrl }]);
       } catch {
         toast.error('이미지 업로드에 실패했어요.');
       }
