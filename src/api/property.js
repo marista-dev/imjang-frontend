@@ -21,6 +21,9 @@ export const propertyApi = {
   // 매물 삭제
   delete: (id) => api.delete(`/properties/${id}`),
 
+  // 통계 (이번 달 / 전체)
+  getStats: () => api.get('/properties/stats'),
+
   // 위치 프리패치
   prefetchLocation: (data) =>
     api.post('/properties/location/prefetch', data),
