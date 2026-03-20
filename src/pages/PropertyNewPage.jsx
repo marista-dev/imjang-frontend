@@ -383,12 +383,11 @@ const PropertyNewPage = () => {
   // 제출
   const { mutate: submitSave, isPending: isSaving } = useMutation({
     mutationFn: (data) => propertyApi.create(data).then((r) => r.data),
-    onSuccess: (created) => {
+    onSuccess: () => {
       toast.success('매물이 등록되었어요!');
       queryClient.invalidateQueries({ queryKey: ['properties-recent'] });
       queryClient.invalidateQueries({ queryKey: ['properties-timeline'] });
-      queryClient.invalidateQueries({ queryKey: ['property-stats'] });
-      navigate(`/properties/${created.id}`, { replace: true });
+      navigate('/timeline', { replace: true });
     },
     onError: () => toast.error('등록에 실패했어요.'),
   });
