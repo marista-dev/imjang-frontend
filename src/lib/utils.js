@@ -55,14 +55,29 @@ export const getRelativeDate = (dateStr) => {
 /**
  * 백엔드 API 응답의 매물 데이터를 프론트엔드 구조로 정규화
  * - priceInfo 중첩 구조 → flat
- * - totalFloor → totalFloors 통일
+ * - evaluation 중첩 구조 → flat
+ * - 이미지 문자열 배열 → 객체 배열
+ * - totalFloor / currentFloor 필드명 통일
  */
 export const normalizeProperty = (p) => ({
   ...p,
+  // id: propertyId fallback
+  id: p.id ?? p.propertyId ?? null,
+  // 가격 정규화 (priceInfo 중첩 or flat)
   deposit: p.priceInfo?.deposit ?? p.deposit ?? null,
   monthlyRent: p.priceInfo?.monthlyRent ?? p.monthlyRent ?? null,
-  salePrice: p.priceInfo?.price ?? p.salePrice ?? null,
+  salePrice: p.priceInfo?.price ?? p.price ?? p.salePrice ?? null,
+  // 층수 정규화
   totalFloors: p.totalFloor ?? p.totalFloors ?? null,
+  floor: p.currentFloor ?? p.floor ?? null,
+  // 평가 정규화 (evaluation 중첩 or flat)
+  canMoveIn: p.evaluation?.moveInAvailable ?? p.canMoveIn ?? null,
+  revisitWanted: p.evaluation?.revisitIntention ?? p.revisitWanted ?? null,
+  priceRating: p.evaluation?.priceEvaluation ?? p.priceRating ?? null,
+  // 이미지 정규화 (문자열 배열 → 객체 배열)
+  images: (p.images ?? []).map((img, idx) =>
+    typeof img === 'string' ? { id: idx, url: img } : img
+  ),
 });
 
 /**

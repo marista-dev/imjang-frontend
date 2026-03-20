@@ -19,7 +19,7 @@ import { PriceDisplay } from '@/components/PriceDisplay';
 import { RatingStars } from '@/components/RatingStars';
 import { ConfirmModal } from '@/components/ConfirmModal';
 import { Spinner } from '@/components/Spinner';
-import { cn, getRelativeDate } from '@/lib/utils';
+import { cn, getRelativeDate, normalizeProperty } from '@/lib/utils';
 
 const CHECK_LABELS = {
   sunlight: '채광',
@@ -45,7 +45,7 @@ const SURROUNDING_LABELS = {
 
 const PRICE_RATING_LABELS = {
   CHEAP: { label: '저렴해요', emoji: '😊' },
-  FAIR: { label: '적당해요', emoji: '😐' },
+  REASONABLE: { label: '적당해요', emoji: '😐' },
   EXPENSIVE: { label: '비싸요', emoji: '😮' },
 };
 
@@ -98,7 +98,7 @@ const PropertyDetailPage = () => {
 
   const { data: property, isLoading, isError } = useQuery({
     queryKey: ['property-detail', id],
-    queryFn: () => propertyApi.getDetail(id).then((r) => r.data),
+    queryFn: () => propertyApi.getDetail(id).then((r) => normalizeProperty(r.data)),
     staleTime: 5 * 60 * 1000,
   });
 
@@ -193,9 +193,10 @@ const PropertyDetailPage = () => {
           />
           <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-slate-500">
             {property.area && <span>{property.area}㎡</span>}
-            {property.floor && (
+            {(property.floor ?? property.currentFloor) && (
               <span>
-                {property.floor}층{property.totalFloors ? `/${property.totalFloors}층` : ''}
+                {property.floor ?? property.currentFloor}층
+                {property.totalFloors ? `/${property.totalFloors}층` : ''}
               </span>
             )}
           </div>

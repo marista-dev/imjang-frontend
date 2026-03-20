@@ -19,7 +19,6 @@ export const PropertyCard = ({ property, className }) => {
   const navigate = useNavigate();
 
   const {
-    id,
     address,
     thumbnailUrl,
     priceType,
@@ -31,10 +30,12 @@ export const PropertyCard = ({ property, className }) => {
     markerColor,
   } = property;
 
+  const propertyId = property.id ?? property.propertyId;
+
   return (
     <button
       type="button"
-      onClick={() => navigate(`/properties/${id}`)}
+      onClick={() => { if (propertyId) navigate(`/properties/${propertyId}`); }}
       className={cn(
         'card flex w-full gap-3 text-left transition-shadow active:shadow-md',
         className,
