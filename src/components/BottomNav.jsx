@@ -1,15 +1,14 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { Home, Map, PlusCircle, Clock } from 'lucide-react';
+import { Home, Map, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useScrollDirection } from '@/hooks/useScrollDirection';
 
 const navItems = [
   { path: '/', label: '홈', icon: Home },
   { path: '/map', label: '지도', icon: Map },
-  { path: '/properties/new', label: '기록', icon: PlusCircle },
   { path: '/timeline', label: '타임라인', icon: Clock },
 ];
 
-// BottomNav를 숨길 경로 패턴
 const HIDDEN_PATTERNS = [
   /^\/login/,
   /^\/signup/,
@@ -18,31 +17,55 @@ const HIDDEN_PATTERNS = [
   /^\/properties\/\d+/,
 ];
 
+const glassStyle = {
+  background: 'rgba(255, 255, 255, 0.72)',
+  backdropFilter: 'blur(24px)',
+  WebkitBackdropFilter: 'blur(24px)',
+  border: '0.5px solid rgba(255, 255, 255, 0.6)',
+  boxShadow: '0 4px 24px rgba(0, 0, 0, 0.06), 0 0 0 0.5px rgba(0, 0, 0, 0.04)',
+};
+
 const BottomNav = () => {
   const { pathname } = useLocation();
+  const scrollDir = useScrollDirection(10);
 
-  if (HIDDEN_PATTERNS.some((pattern) => pattern.test(pathname))) {
-    return null;
-  }
+  if (HIDDEN_PATTERNS.some((p) => p.test(pathname))) return null;
+
+  const isHidden = scrollDir === 'down';
 
   return (
-    <nav className="fixed bottom-0 left-1/2 z-50 w-full max-w-app -translate-x-1/2 border-t border-slate-200 bg-white/95 pb-safe backdrop-blur-sm">
-      <div className="flex items-center justify-around py-2">
+    <nav
+      style={glassStyle}
+      className={cn(
+        'fixed bottom-3 left-1/2 z-50 h-16 w-[calc(100%-24px)] max-w-[406px]',
+        '-translate-x-1/2 rounded-[22px]',
+        'transition-transform duration-300 ease-out',
+        isHidden ? 'translate-y-[calc(100%_+_24px)]' : 'translate-y-0',
+      )}
+    >
+      <div className="flex h-full items-center justify-around px-4">
         {navItems.map(({ path, label, icon: Icon }) => (
           <NavLink
             key={path}
             to={path}
+            end={path === '/'}
             className={({ isActive }) =>
               cn(
-                'flex min-h-[44px] min-w-[44px] flex-col items-center justify-center gap-0.5 text-xs transition-colors',
-                isActive
-                  ? 'font-semibold text-primary'
-                  : 'text-slate-400',
+                'relative flex min-h-[44px] min-w-[44px] flex-col items-center justify-center gap-0.5',
+                'text-xs transition-colors',
+                isActive ? 'font-semibold text-primary' : 'text-slate-400',
               )
             }
           >
-            <Icon size={24} />
-            <span>{label}</span>
+            {({ isActive }) => (
+              <>
+                <Icon size={22} />
+                <span>{label}</span>
+                {isActive && (
+                  <span className="absolute -bottom-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-primary" />
+                )}
+              </>
+            )}
           </NavLink>
         ))}
       </div>

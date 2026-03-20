@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from './store/useAuthStore';
 import BottomNav from './components/BottomNav';
+import { FloatingActionButton } from './components/FloatingActionButton';
 
 // Pages
 import LoginPage from './pages/LoginPage';
@@ -120,8 +121,9 @@ const App = () => {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
 
-      {/* 하단 네비게이션 (인증 페이지 & 매물 등록/상세에서 자동 숨김) */}
+      {/* 하단 네비게이션 + FAB */}
       <BottomNav />
+      <FloatingActionButton />
     </div>
   );
 };

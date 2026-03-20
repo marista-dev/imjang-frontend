@@ -65,17 +65,7 @@ const HomePage = () => {
       {/* 퀵 액션 */}
       <div className="mb-6">
         <h2 className="mb-3 text-sm font-semibold text-slate-500 uppercase tracking-wide">빠른 시작</h2>
-        <div className="grid grid-cols-3 gap-3">
-          <button
-            type="button"
-            onClick={() => navigate('/properties/new')}
-            className="flex flex-col items-center gap-2 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-all active:scale-[0.97]"
-          >
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary-50">
-              <Plus size={22} className="text-primary" />
-            </div>
-            <span className="text-xs font-medium text-slate-700">매물 기록</span>
-          </button>
+        <div className="grid grid-cols-2 gap-3">
           <button
             type="button"
             onClick={() => navigate('/map')}
