@@ -170,6 +170,33 @@ mapApi.getMarkers({
 
 ---
 
+## 이슈 9: 위치 확정 시 /location/prefetch 자동 호출
+
+**원인**: 주소가 확정되는 시점(주소 검색 완료, 현재 위치 사용 완료, 지도에서 선택 완료)에
+`POST /api/v1/properties/location/prefetch`를 호출해야 백엔드가 주변 시설 정보를 미리 수집함.
+현재 프론트엔드에서 이 호출이 없음.
+
+**수정**: `PropertyNewPage.jsx`에서 주소가 확정되는 **모든 경로**에 prefetch 호출 추가:
+
+```js
+// 주소 확정 시 자동 호출 (비동기, 실패해도 무시)
+const triggerPrefetch = (address, latitude, longitude) => {
+  propertyApi.prefetchLocation({ address, latitude, longitude }).catch(() => {
+    // prefetch 실패는 무시 (백그라운드 작업)
+    console.warn('location prefetch failed');
+  });
+};
+```
+
+호출 시점 3곳:
+1. **다음 주소 검색 완료** → `daum.Postcode.oncomplete` 콜백에서
+2. **현재 위치 사용 완료** → `geocoder.coord2Address` 성공 콜백에서
+3. **지도에서 선택 완료** → `handleMapConfirm` 함수에서
+
+`src/api/property.js`의 `prefetchLocation` 함수가 이미 정의되어 있으므로 그대로 사용.
+
+---
+
 ## 수정할 파일 목록
 
 1. **`vite.config.js`** — `/temp-images` 프록시 추가
