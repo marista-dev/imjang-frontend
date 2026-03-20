@@ -5,6 +5,7 @@ import { propertyApi } from '@/api/property';
 import { PropertyCard } from '@/components/PropertyCard';
 import { Spinner } from '@/components/Spinner';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
+import { normalizeProperty } from '@/lib/utils';
 
 const formatGroupDate = (dateStr) => {
   const date = new Date(dateStr);
@@ -27,16 +28,6 @@ const formatGroupDate = (dateStr) => {
   return `${date.getFullYear()}년 ${month}월 ${day}일`;
 };
 
-const groupByDate = (properties) => {
-  const groups = {};
-  properties.forEach((p) => {
-    const date = (p.visitedAt || '').split('T')[0];
-    if (!groups[date]) groups[date] = [];
-    groups[date].push(p);
-  });
-  return Object.entries(groups).sort(([a], [b]) => b.localeCompare(a));
-};
-
 const TimelinePage = () => {
   const navigate = useNavigate();
 
@@ -50,19 +41,18 @@ const TimelinePage = () => {
     queryKey: ['properties-timeline'],
     queryFn: ({ pageParam = 0 }) =>
       propertyApi.getTimeline({ page: pageParam, size: 20 }).then((r) => r.data),
-    getNextPageParam: (lastPage) => {
-      if (lastPage.last) return undefined;
-      return (lastPage.number ?? 0) + 1;
+    getNextPageParam: (lastPage, allPages) => {
+      if (!lastPage.hasNext) return undefined;
+      return allPages.length;
     },
     staleTime: 2 * 60 * 1000,
   });
 
   const sentinelRef = useInfiniteScroll(fetchNextPage, hasNextPage, isFetchingNextPage);
 
-  const allProperties =
-    data?.pages.flatMap((page) => page.content ?? page.properties ?? page) ?? [];
-  const totalCount = data?.pages[0]?.totalElements ?? data?.pages[0]?.total ?? null;
-  const grouped = groupByDate(allProperties);
+  // 백엔드가 timelineGroups: [{date, properties}] 구조로 응답
+  const grouped = data?.pages.flatMap((page) => page.timelineGroups ?? []) ?? [];
+  const isEmpty = grouped.every((g) => (g.properties ?? []).length === 0);
 
   return (
     <div className="min-h-screen bg-slate-50 pb-24">
@@ -71,9 +61,6 @@ const TimelinePage = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold text-slate-800">타임라인</h1>
-            {totalCount !== null && (
-              <p className="mt-0.5 text-xs text-slate-500">총 {totalCount}개의 기록</p>
-            )}
           </div>
           <button
             type="button"
@@ -91,7 +78,7 @@ const TimelinePage = () => {
           <div className="flex items-center justify-center py-20">
             <Spinner />
           </div>
-        ) : allProperties.length === 0 ? (
+        ) : grouped.length === 0 || isEmpty ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100">
               <BookOpen size={28} className="text-slate-400" />
@@ -109,17 +96,17 @@ const TimelinePage = () => {
           </div>
         ) : (
           <div className="space-y-6">
-            {grouped.map(([date, properties]) => (
+            {grouped.map(({ date, properties }) => (
               <div key={date}>
                 <div className="mb-2 flex items-center gap-2">
                   <span className="text-sm font-semibold text-slate-700">
                     {formatGroupDate(date)}
                   </span>
-                  <span className="text-xs text-slate-400">{properties.length}개</span>
+                  <span className="text-xs text-slate-400">{(properties ?? []).length}개</span>
                 </div>
                 <div className="space-y-3">
-                  {properties.map((property) => (
-                    <PropertyCard key={property.id} property={property} />
+                  {(properties ?? []).map((property) => (
+                    <PropertyCard key={property.id} property={normalizeProperty(property)} />
                   ))}
                 </div>
               </div>

@@ -5,16 +5,11 @@ import { propertyApi } from '@/api/property';
 import { useAuthStore } from '@/store/useAuthStore';
 import { PropertyCard } from '@/components/PropertyCard';
 import { Spinner } from '@/components/Spinner';
+import { normalizeProperty } from '@/lib/utils';
 
 const HomePage = () => {
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
-
-  const { data: statsData } = useQuery({
-    queryKey: ['property-stats'],
-    queryFn: () => propertyApi.getStats().then((r) => r.data),
-    retry: false,
-  });
 
   const { data: recentData, isLoading: recentLoading } = useQuery({
     queryKey: ['properties-recent'],
@@ -22,7 +17,9 @@ const HomePage = () => {
     staleTime: 2 * 60 * 1000,
   });
 
-  const recentProperties = recentData?.properties ?? recentData ?? [];
+  const recentProperties = (recentData?.properties ?? []).map(normalizeProperty);
+  const monthlyCount = recentData?.monthlyRecordCount ?? null;
+  const totalCount = recentData?.totalCount ?? null;
 
   return (
     <div className="min-h-screen bg-slate-50 px-5 pt-6 pb-24">
@@ -45,8 +42,8 @@ const HomePage = () => {
         <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
           <p className="text-xs text-slate-500 mb-1">이번 달 기록</p>
           <p className="text-2xl font-bold text-primary">
-            {statsData?.monthlyCount ?? '-'}
-            {statsData?.monthlyCount !== undefined && (
+            {monthlyCount ?? '-'}
+            {monthlyCount !== null && (
               <span className="text-sm font-medium text-slate-500 ml-1">개</span>
             )}
           </p>
@@ -54,8 +51,8 @@ const HomePage = () => {
         <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
           <p className="text-xs text-slate-500 mb-1">전체 기록</p>
           <p className="text-2xl font-bold text-slate-800">
-            {statsData?.totalCount ?? '-'}
-            {statsData?.totalCount !== undefined && (
+            {totalCount ?? '-'}
+            {totalCount !== null && (
               <span className="text-sm font-medium text-slate-500 ml-1">개</span>
             )}
           </p>

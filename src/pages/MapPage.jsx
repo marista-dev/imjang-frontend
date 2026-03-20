@@ -7,7 +7,7 @@ import { mapApi } from '@/api/map';
 import { PriceDisplay } from '@/components/PriceDisplay';
 import { RatingStars } from '@/components/RatingStars';
 import { Spinner } from '@/components/Spinner';
-import { cn } from '@/lib/utils';
+import { cn, normalizeProperty } from '@/lib/utils';
 
 // ─── 헬퍼 ────────────────────────────────────────────────────────────────────
 
@@ -36,7 +36,7 @@ const RATING_FILTERS = [
 const PRICE_TYPE_FILTERS = [
   { value: '', label: '전체' },
   { value: 'JEONSE', label: '전세' },
-  { value: 'MONTHLY_RENT', label: '월세' },
+  { value: 'MONTHLY', label: '월세' },
   { value: 'SALE', label: '매매' },
 ];
 
@@ -108,7 +108,7 @@ const MapPage = () => {
       `;
 
       el.addEventListener('click', () => {
-        setSelectedProperty(p);
+        setSelectedProperty(normalizeProperty(p));
         setDrawerOpen(true);
       });
 
@@ -136,10 +136,11 @@ const MapPage = () => {
     setLoadingMarkers(true);
     try {
       const res = await mapApi.getMarkers({
-        swLat: sw.getLat(),
-        swLng: sw.getLng(),
-        neLat: ne.getLat(),
-        neLng: ne.getLng(),
+        southWestLat: sw.getLat(),
+        southWestLng: sw.getLng(),
+        northEastLat: ne.getLat(),
+        northEastLng: ne.getLng(),
+        zoomLevel: map.getLevel(),
       });
       const data = res.data?.markers ?? res.data ?? [];
       allMarkersRef.current = data;

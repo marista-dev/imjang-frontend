@@ -53,6 +53,19 @@ export const getRelativeDate = (dateStr) => {
 };
 
 /**
+ * 백엔드 API 응답의 매물 데이터를 프론트엔드 구조로 정규화
+ * - priceInfo 중첩 구조 → flat
+ * - totalFloor → totalFloors 통일
+ */
+export const normalizeProperty = (p) => ({
+  ...p,
+  deposit: p.priceInfo?.deposit ?? p.deposit ?? null,
+  monthlyRent: p.priceInfo?.monthlyRent ?? p.monthlyRent ?? null,
+  salePrice: p.priceInfo?.price ?? p.salePrice ?? null,
+  totalFloors: p.totalFloor ?? p.totalFloors ?? null,
+});
+
+/**
  * 별점 → 마커 컬러
  */
 export const getRatingColor = (rating) => {
