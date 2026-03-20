@@ -113,6 +113,117 @@ Input:
 - YELLOW (`#F59E0B`): 3점 → `text-warning`
 - RED (`#EF4444`): 1~2점 → `text-danger`
 
+### 네비게이션 디자인 (Apple HIG + iOS 26 Liquid Glass 기반)
+
+Apple Human Interface Guidelines와 iOS 26 Liquid Glass 디자인 시스템을 웹에 적용한 네비게이션 패턴.
+
+#### BottomNav (3탭 플로팅 글래스 탭바)
+- **탭은 네비게이션 전용** (Apple HIG: "탭바는 네비게이션에만 사용, 액션 버튼으로 사용하지 말 것")
+- **3개 탭**: 홈, 지도, 타임라인 (매물 기록은 FAB으로 분리)
+- **플로팅 스타일**: 하단에서 띠워지고 둥근 모서리 (iOS 26 캡슐 형태)
+- **Glass 효과**: `backdrop-filter: blur(24px)` + 반투명 배경 + 미세한 테두리
+- **스크롤 시 숨김**: 아래로 스크롤 → 숨김, 위로 스크롤 → 나타남 (iOS 26 `.tabBarMinimizeBehavior(.onScrollDown)` 패턴)
+- **Safe Area**: `env(safe-area-inset-bottom)` 적용
+- **활성 탭 표시**: 아이콘 + 라벨 색상 변경 + 하단 dot indicator
+
+```css
+/* Glass 탭바 핵심 CSS */
+.glass-nav {
+  position: fixed;
+  bottom: 12px;
+  left: 12px;
+  right: 12px;
+  max-width: 430px; /* app container */
+  margin: 0 auto;
+  height: 64px;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-radius: 22px;
+  border: 0.5px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06),
+              0 0 0 0.5px rgba(0, 0, 0, 0.04);
+  transition: transform 0.3s ease;
+}
+.glass-nav.hidden {
+  transform: translateY(calc(100% + 24px));
+}
+```
+
+#### FAB (Floating Action Button) — 매물 기록 버튼
+- **위치**: 오른쪽 하단, BottomNav 위에 띠 (bottom: 88px, right: 20px)
+- **디자인**: 52xd752px, 둥근 사각형(rounded-2xl), Primary 컬러, 그림자
+- **아이콘**: Lucide `Plus` (22px, white)
+- **스크롤 시**: BottomNav와 함께 숨겨지고 나타남
+- **해당 페이지에서만 표시**: 홈, 타임라인, 지도 (매물 등록/상세/수정 페이지에서는 숨김)
+
+```jsx
+// FAB 예시 (최소 구현)
+<button className="fixed bottom-[88px] right-5 z-50 flex h-[52px] w-[52px]
+  items-center justify-center rounded-2xl bg-primary shadow-lg
+  shadow-primary/30 active:scale-95 transition-all">
+  <Plus size={22} className="text-white" />
+</button>
+```
+
+#### useScrollDirection 훅 (스크롤 방향 감지)
+- `src/hooks/useScrollDirection.js`로 구현
+- 아래로 스크롤 → `'down'` 반환, 위로 스크롤 → `'up'` 반환
+- threshold: 10px (미세한 스크롤에 반응하지 않음)
+- BottomNav와 FAB 모두 이 훅의 값을 참조해서 동시에 숨김/나타냈
+
+#### Apple HIG 핵심 원칙 (웹 적용)
+1. **Glass는 네비게이션 레이어에만**: 콘텐츠(리스트, 카드, 미디어)에는 절대 적용하지 않음
+2. **탭은 3~5개**: 최소한으로 유지
+3. **둥근 모서리 강화**: iOS 26은 모든 컴포넌트에 더 큰 border-radius 적용
+4. **전체 화면 콘텐츠**: 탭바 뒤로 콘텐츠가 비치는 느낌
+5. **스크롤 시 minimize**: 화면 부동산을 최대화하기 위해 스크롤시 탭바 숨김
+
+### 네비게이션 디자인 (Apple HIG + iOS 26 Liquid Glass 기반)
+
+Apple Human Interface Guidelines와 iOS 26 Liquid Glass 디자인 시스템을 웹에 적용한 네비게이션 패턴.
+
+#### BottomNav (3탭 플로팅 글래스 탭바)
+- **탭은 네비게이션 전용** (Apple HIG: "탭바는 네비게이션에만 사용, 액션 버튼으로 사용하지 말 것")
+- **3개 탭**: 홈, 지도, 타임라인 (매물 기록은 FAB으로 분리)
+- **플로팅 스타일**: 하단에서 12px 띄우고 둥근 모서리 (iOS 26 캅슐 형태)
+- **Glass 효과**: `backdrop-filter: blur(24px)` + 반투명 배경 + 미세한 테두리
+- **스크롤 시 숨김**: 아래로 스크롤 → 숨김, 위로 스크롤 → 나타남 (iOS 26 tabBarMinimizeBehavior 패턴)
+- **Safe Area**: `env(safe-area-inset-bottom)` 적용
+- **활성 탭 표시**: primary 색상 + 하단 dot indicator
+
+```
+/* Glass 탭바 핵심 CSS */
+background: rgba(255, 255, 255, 0.72);
+backdrop-filter: blur(24px);
+-webkit-backdrop-filter: blur(24px);
+border-radius: 22px;
+border: 0.5px solid rgba(255, 255, 255, 0.6);
+box-shadow: 0 4px 24px rgba(0,0,0,0.06), 0 0 0 0.5px rgba(0,0,0,0.04);
+transition: transform 0.3s ease;
+/* 숨김 상태 */
+transform: translateY(calc(100% + 24px));
+```
+
+#### FAB (Floating Action Button) — 매물 기록 버튼
+- **위치**: 오른쪽 하단, BottomNav 위 (bottom: 88px, right: 20px)
+- **디자인**: 52xd752px, rounded-2xl, Primary 커러, shadow-lg
+- **아이콘**: Lucide `Plus` (22px, white)
+- **스크롤 시**: BottomNav와 함께 숨겨지고 나타남
+- **표시 페이지**: 홈, 타임라인, 지도에서만 표시
+
+#### useScrollDirection 훅 (스크롤 방향 감지)
+- `src/hooks/useScrollDirection.js`로 구현
+- threshold: 10px (미세한 스크롤에 반응하지 않음)
+- BottomNav와 FAB 모두 이 훅을 참조해 동시 숨김/나타냈
+
+#### Apple HIG 핵심 원칙 (웹 적용)
+1. **Glass는 네비게이션 레이어에만**: 콘텐츠(리스트, 카드, 미디어)에는 절대 적용 금지
+2. **탭은 3~5개**: 최소한으로 유지
+3. **둥근 모서리 강화**: iOS 26은 모든 컴포넌트에 더 큰 border-radius
+4. **전체 화면 콘텐츠**: 탭바 뒤로 콘텐츠가 비치는 느낌
+5. **스크롤 시 minimize**: 화면 부동산 최대화
+
 ### 애니메이션 규칙
 - 페이지 전환: CSS `animate-fade-in-up` (150ms ease-out)
 - 카드 등장: stagger (각 50ms delay, `stagger-1` ~ `stagger-5`)
