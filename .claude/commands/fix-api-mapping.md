@@ -1,0 +1,193 @@
+# /fix-api-mapping — 백엔드 API 응답 구조에 맞게 프론트엔드 전면 수정
+
+백엔드 API 응답 구조와 프론트엔드 데이터 매핑이 불일치하는 문제를 전면 수정해.
+아래 이슈들을 **모두** 수정해야 한다.
+
+---
+
+## 이슈 1: 썸네일 이미지 깨짐 (전체 페이지)
+
+**원인**: 백엔드가 `/temp-images/user2/2026/03/...` 경로로 이미지를 서빙하는데, Vite 프록시에 `/temp-images` 경로가 없음.
+
+**수정**: `vite.config.js`에 `/temp-images` 프록시 추가:
+```js
+proxy: {
+  '/api': { target: 'http://localhost:8080', changeOrigin: true, secure: false },
+  '/images': { target: 'http://localhost:8080', changeOrigin: true, secure: false },
+  '/temp-images': { target: 'http://localhost:8080', changeOrigin: true, secure: false },  // 추가
+}
+```
+
+---
+
+## 이슈 2: 홈 페이지 통계 "-" 표시
+
+**원인**: 프론트엔드가 `/api/v1/properties/stats` 호출 → 백엔드에 이 API 없음 (405).
+하지만 `/api/v1/properties/recent?limit=3` 응답에 이미 포함:
+```json
+{
+  "properties": [...],
+  "totalCount": 1,
+  "monthlyRecordCount": 1
+}
+```
+
+**수정**: `HomePage.jsx`에서 별도 stats API 호출 삭제하고, recent API 응답의 `totalCount`와 `monthlyRecordCount`를 사용:
+- `propertyApi.getStats()` 호출 제거
+- recent 쿼리 응답에서 `totalCount`, `monthlyRecordCount` 추출
+
+---
+
+## 이슈 3: 홈 페이지 가격 "전세 -"
+
+**원인**: 백엔드 recent API 응답의 가격 구조가 중첩:
+```json
+{
+  "priceType": "JEONSE",
+  "priceInfo": {
+    "deposit": 1212,
+    "monthlyRent": null,
+    "price": null
+  }
+}
+```
+프론트엔드 PropertyCard는 `property.deposit`, `property.salePrice` 등 flat 구조 기대.
+
+**수정**: PropertyCard에 전달하기 전에 데이터 변환하거나, PropertyCard가 `priceInfo` 중첩 구조도 처리하도록 수정:
+```js
+// 데이터 정규화 함수
+const normalizeProperty = (p) => ({
+  ...p,
+  deposit: p.priceInfo?.deposit ?? p.deposit,
+  monthlyRent: p.priceInfo?.monthlyRent ?? p.monthlyRent,
+  salePrice: p.priceInfo?.price ?? p.salePrice,
+});
+```
+
+---
+
+## 이슈 4: 타임라인 "NaN년 NaN월 NaN일"
+
+**원인**: 백엔드 타임라인 응답 구조:
+```json
+{
+  "timelineGroups": [
+    {
+      "date": "2026-03-21",
+      "properties": [{ ... }]
+    }
+  ],
+  "hasNext": false
+}
+```
+프론트엔드는 Spring Page 구조 (`content`, `last`, `number`) 기대.
+
+**수정**: `TimelinePage.jsx`의 데이터 파싱을 백엔드 구조에 맞게 전면 수정:
+- `data.pages.flatMap(page => page.content)` → `data.pages.flatMap(page => page.timelineGroups)`
+- 날짜 그룹핑: 백엔드가 이미 그룹핑해서 보내므로, 프론트에서 다시 그룹핑할 필요 없음
+- `getNextPageParam`: `lastPage.last` → `!lastPage.hasNext`면 undefined
+
+---
+
+## 이슈 5: 타임라인 카드 데이터 빈칸
+
+**원인**: 필드명 불일치:
+- `totalFloor` (백엔드) vs `totalFloors` (프론트)
+- `thumbnailUrl`이 `/temp-images/...` (이슈 1로 해결)
+- 가격이 flat 구조 (이슈 3과 다름 — 타임라인은 flat으로 옴)
+
+**수정**: PropertyCard에서 `totalFloor`도 처리하도록 또는 정규화 함수에서 통일.
+
+---
+
+## 이슈 6: 타임라인 무한 스크롤 page=1 반복 호출
+
+**원인**: `getNextPageParam`이 Spring Page 구조 (`lastPage.last`, `lastPage.number`) 기대.
+백엔드는 `hasNext: boolean`만 보내고 page number는 안 보냄.
+
+**수정**:
+```js
+getNextPageParam: (lastPage, allPages) => {
+  if (!lastPage.hasNext) return undefined;
+  return allPages.length; // 다음 페이지 번호
+},
+```
+
+---
+
+## 이슈 7: 지도 마커 400 에러
+
+**원인**: 프론트엔드 파라미터명과 백엔드가 다름 + zoomLevel 누락.
+
+프론트엔드 (현재):
+```
+?swLat=37.52&swLng=127.05&neLat=37.59&neLng=127.07
+```
+
+백엔드 (기대):
+```
+?southWestLat=37.52&southWestLng=127.05&northEastLat=37.59&northEastLng=127.07&zoomLevel=5
+```
+
+**수정**: `src/api/map.js`의 `getMarkers` 함수 파라미터명 변경:
+```js
+getMarkers: ({ southWestLat, southWestLng, northEastLat, northEastLng, zoomLevel }) =>
+  api.get('/properties/map/markers', {
+    params: { southWestLat, southWestLng, northEastLat, northEastLng, zoomLevel }
+  }),
+```
+
+그리고 `MapPage.jsx`에서 마커 API 호출 시 파라미터명 맞추기:
+```js
+const bounds = map.getBounds();
+const sw = bounds.getSouthWest();
+const ne = bounds.getNorthEast();
+const zoomLevel = map.getLevel();
+
+mapApi.getMarkers({
+  southWestLat: sw.getLat(),
+  southWestLng: sw.getLng(),
+  northEastLat: ne.getLat(),
+  northEastLng: ne.getLng(),
+  zoomLevel,
+});
+```
+
+---
+
+## 수정할 파일 목록
+
+1. **`vite.config.js`** — `/temp-images` 프록시 추가
+2. **`src/api/map.js`** — 파라미터명 수정 (southWestLat 등 + zoomLevel)
+3. **`src/pages/HomePage.jsx`** — stats API 제거, recent 응답에서 통계 추출, 가격 정규화
+4. **`src/pages/TimelinePage.jsx`** — timelineGroups 구조 파싱, hasNext 기반 페이지네이션
+5. **`src/pages/MapPage.jsx`** — 마커 API 파라미터명 수정
+6. **`src/components/PropertyCard.jsx`** — priceInfo 중첩 구조 처리, totalFloor 지원
+7. **`src/lib/utils.js`** — normalizeProperty 유틸 함수 추가 (선택)
+
+---
+
+## 정규화 유틸 함수 (src/lib/utils.js에 추가)
+
+```js
+/**
+ * 백엔드 API 응답의 매물 데이터를 프론트엔드 구조로 정규화
+ */
+export const normalizeProperty = (p) => ({
+  ...p,
+  deposit: p.priceInfo?.deposit ?? p.deposit ?? null,
+  monthlyRent: p.priceInfo?.monthlyRent ?? p.monthlyRent ?? null,
+  salePrice: p.priceInfo?.price ?? p.salePrice ?? null,
+  totalFloors: p.totalFloor ?? p.totalFloors ?? null,
+});
+```
+
+홈, 타임라인, 지도 등 매물 데이터를 표시하는 모든 곳에서 이 함수를 적용.
+
+---
+
+## 완료 후
+1. `npm run build` 성공 확인
+2. Vite dev server 재시작 (`/temp-images` 프록시 적용을 위해)
+3. 빌드 에러 있으면 수정
+4. `git add -A && git commit -m "fix: 백엔드 API 응답 구조 매핑 전면 수정 (이미지, 통계, 가격, 타임라인, 지도)" && git push origin main`
