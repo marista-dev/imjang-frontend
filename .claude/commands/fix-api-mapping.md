@@ -441,7 +441,33 @@ PropertyDetailPage에서 `normalizeProperty()` 적용 후 렌더링하되,
 
 ---
 
-## 이슈 17: 지도 마커 안 보임 (markers 빈 배열)
+## 이슈 17: 매물 등록 후 상세 페이지 이동 실패 (ID undefined)
+
+**원인**: 백엔드 `POST /api/v1/properties` 응답이 생성된 ID를 돌려주지 않음.
+
+백엔드 응답:
+```json
+{ "message": "매물이 성공적으로 기록되었습니다." }
+```
+
+프론트엔드가 `created.id`로 상세 페이지 이동 시도 → `id`가 없으니 `undefined`.
+
+**수정**: `PropertyNewPage.jsx`의 onSuccess 콜백에서:
+- 상세 페이지 이동 대신 `/timeline` 또는 `/` (홈)으로 이동
+- 성공 토스트 표시
+
+```js
+onSuccess: () => {
+  toast.success('매물이 등록되었어요!');
+  queryClient.invalidateQueries({ queryKey: ['properties-recent'] });
+  queryClient.invalidateQueries({ queryKey: ['properties-timeline'] });
+  navigate('/timeline', { replace: true });  // 상세 대신 타임라인으로
+},
+```
+
+---
+
+## 이슈 18: 지도 마커 안 보임 (markers 빈 배열)
 
 **원인**: 매물에 위도/경도가 저장되어 있지 않음.
 빠른 기록에서 "현재 위치 사용" / "지도에서 선택" 시 latitude/longitude를
