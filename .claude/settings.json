@@ -1,0 +1,42 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install*)",
+      "Bash(npm run dev*)",
+      "Bash(npm run build*)",
+      "Bash(npm run preview*)",
+      "Bash(npm run lint*)",
+      "Bash(npx *)",
+      "Bash(git add*)",
+      "Bash(git commit*)",
+      "Bash(git push*)",
+      "Bash(git status*)",
+      "Bash(git log*)",
+      "Bash(git diff*)",
+      "Bash(cat *)",
+      "Bash(ls *)",
+      "Bash(mkdir *)",
+      "Bash(cp *)",
+      "Bash(mv *)",
+      "Bash(rm src/*)",
+      "Bash(curl localhost*)",
+      "Bash(open *)",
+      "Read(*)",
+      "Write(src/**)",
+      "Write(public/**)",
+      "Write(*.md)",
+      "Write(*.json)",
+      "Write(*.js)",
+      "Write(*.jsx)",
+      "Write(*.css)",
+      "Write(*.html)",
+      "Write(.env*)"
+    ],
+    "deny": [
+      "Bash(rm -rf /)*",
+      "Bash(rm -rf ~)*",
+      "Bash(rm -rf .git)*"
+    ]
+  },
+  "model": "claude-sonnet-4-20250514"
+}
