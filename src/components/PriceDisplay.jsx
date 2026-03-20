@@ -15,6 +15,7 @@ export const PriceDisplay = ({
 }) => {
   const renderPrice = () => {
     switch (priceType) {
+      case 'MONTHLY_RENT':
       case 'MONTHLY':
         return (
           <span>
