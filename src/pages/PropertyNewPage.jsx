@@ -227,9 +227,11 @@ const MapSelectOverlay = ({ onConfirm, onClose }) => {
           </div>
         )}
 
-        {/* 중앙 핀 */}
-        <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-full">
-          <MapPin size={36} className="text-danger drop-shadow-md" fill="#EF4444" />
+        {/* 중앙 핀 — z-20으로 카카오맵 위에 표시 */}
+        <div className="pointer-events-none absolute left-1/2 top-1/2 z-20 -translate-x-1/2 -translate-y-full">
+          <MapPin size={40} className="text-danger drop-shadow-lg" fill="#EF4444" strokeWidth={1.5} />
+          {/* 핀 그림자 dot */}
+          <div className="mx-auto -mt-1 h-2 w-2 rounded-full bg-black/20 blur-[2px]" />
         </div>
       </div>
 
