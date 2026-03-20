@@ -34,10 +34,65 @@ Figma 디자인(FastWrite)을 기반으로 한다.
   [◎ 현재 위치 사용]  [🗺 지도에서 선택]
 ```
 - 주소 검색 버튼 클릭 → 다음 우편번호 검색 팝업 (기존 daum.Postcode)
-- "현재 위치 사용" → navigator.geolocation으로 좌표 → 카카오 역지오코딩으로 주소 변환
-- "지도에서 선택" → 다음 우편번호 검색 팝업 (동일)
 - 주소 입력 전: placeholder "주소를 검색해주세요"
 - 주소 입력 후: 주소 텍스트 표시 + 배경 primary-50
+
+**"현재 위치 사용" 버튼**:
+1. `navigator.geolocation.getCurrentPosition()`으로 현재 위도/경도 획득
+2. 카카오맵 JS SDK의 `kakao.maps.services.Geocoder`로 역지오코딩
+3. `geocoder.coord2Address(lng, lat, callback)`로 좌표 → 주소 변환
+4. 변환된 주소를 자동 입력 + 위도/경도 formData에 저장
+5. 로딩 중: 버튼에 Spinner 표시
+6. 실패 시: toast.error('위치 정보를 가져올 수 없어요')
+7. 권한 거부 시: toast.error('위치 권한을 허용해주세요')
+
+```js
+// 역지오코딩 핵심 코드
+const geocoder = new kakao.maps.services.Geocoder();
+navigator.geolocation.getCurrentPosition((pos) => {
+  const { latitude, longitude } = pos.coords;
+  geocoder.coord2Address(longitude, latitude, (result, status) => {
+    if (status === kakao.maps.services.Status.OK) {
+      const address = result[0].road_address?.address_name 
+        || result[0].address.address_name;
+      setFormData(prev => ({ ...prev, address, latitude, longitude }));
+    }
+  });
+});
+```
+
+**"지도에서 선택" 버튼**:
+1. 클릭 시 풀스크린 모달(또는 새 페이지 섹션)으로 카카오맵 표시
+2. 초기 위치: `navigator.geolocation`으로 현재 위치 가져와서 지도 중앙에 표시
+3. 지도 중앙에 빨간 핀 마커 표시 (고정 위치, 지도가 움직임)
+4. 사용자가 지도를 드래그해서 원하는 위치로 이동
+5. 지도 중앙 좌표가 실시간으로 변경되며, 하단에 현재 주소 표시 (역지오코딩)
+6. "이 위치로 선택" 버튼 클릭 → 주소 + 좌표 확정 → 모달 닫힘
+7. 맵 이벤트: `kakao.maps.event.addListener(map, 'center_changed', ...)`로 지도 중앙 변경 감지
+8. debounce(300ms)로 역지오코딩 호출 최적화
+
+```jsx
+// 지도 선택 모달 구조
+<Drawer.Root open={mapOpen} onOpenChange={setMapOpen}>
+  <Drawer.Content className="fixed inset-0 z-[100] bg-white">
+    {/* 카카오맵 컨테이너 (100% 높이) */}
+    <div id="map-select" className="h-full w-full" />
+    
+    {/* 중앙 고정 핀 (지도 위에 오버레이) */}
+    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-full">
+      <MapPin size={36} className="text-danger" />
+    </div>
+    
+    {/* 하단 주소 표시 + 확인 버튼 */}
+    <div className="absolute bottom-0 left-0 right-0 p-5 pb-safe bg-white border-t">
+      <p className="text-sm text-slate-700 mb-3">{selectedAddress}</p>
+      <button onClick={confirmLocation} className="btn-primary">
+        이 위치로 선택
+      </button>
+    </div>
+  </Drawer.Content>
+</Drawer.Root>
+```
 
 ### 섹션 2: 필수 체크리스트
 ```
