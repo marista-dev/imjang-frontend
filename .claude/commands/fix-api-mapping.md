@@ -224,6 +224,95 @@ if (!propertyId) return; // id 없으면 네비게이션 안 함
 
 ---
 
+## 이슈 12: 상세 페이지 이미지 깨짐
+
+**원인**: 백엔드 `images` 필드가 **문자열 배열** (`["/temp-images/..."]`)인데,
+프론트엔드는 `[{id, url}]` 객체 배열을 기대함.
+
+백엔드 응답:
+```json
+"images": ["/temp-images/user2/2026/03/thumb_xxx.png"]
+```
+
+프론트엔드 기대:
+```json
+"images": [{"id": 1, "url": "/temp-images/..."}]
+```
+
+**수정**: `PropertyDetailPage.jsx`의 ImageGallery에서 두 형식 모두 처리:
+```js
+const normalizedImages = (property.images || []).map((img, idx) =>
+  typeof img === 'string' ? { id: idx, url: img } : img
+);
+```
+
+---
+
+## 이슈 13: 상세 페이지 체크리스트/입주/재방문 안 보임
+
+**원인**: 백엔드가 `evaluation` 객체로 중첩 전달:
+```json
+"evaluation": {
+  "moveInAvailable": true,
+  "revisitIntention": false,
+  "priceEvaluation": "REASONABLE"
+}
+```
+프론트엔드는 flat 구조 기대: `property.canMoveIn`, `property.revisitWanted`, `property.priceRating`
+
+**수정**: normalizeProperty에 evaluation 전개 추가:
+```js
+export const normalizeProperty = (p) => ({
+  ...p,
+  // 가격
+  deposit: p.priceInfo?.deposit ?? p.deposit ?? null,
+  monthlyRent: p.priceInfo?.monthlyRent ?? p.monthlyRent ?? null,
+  salePrice: p.priceInfo?.price ?? p.price ?? p.salePrice ?? null,
+  // 층수
+  totalFloors: p.totalFloor ?? p.totalFloors ?? null,
+  floor: p.currentFloor ?? p.floor ?? null,
+  // 평가 (evaluation 중첩 구조 전개)
+  canMoveIn: p.evaluation?.moveInAvailable ?? p.canMoveIn ?? null,
+  revisitWanted: p.evaluation?.revisitIntention ?? p.revisitWanted ?? null,
+  priceRating: p.evaluation?.priceEvaluation ?? p.priceRating ?? null,
+  // 이미지 (문자열 배열 → 객체 배열)
+  images: (p.images || []).map((img, idx) =>
+    typeof img === 'string' ? { id: idx, url: img } : img
+  ),
+});
+```
+
+---
+
+## 이슈 14: 상세 페이지 가격 표시 오류 ("전세 131만")
+
+**원인**: 백엔드는 `deposit: 131` (만원 단위)로 보내는데 프론트 PriceDisplay는
+`salePrice` 필드를 찾음. 백엔드 상세 API는 `price` 필드(매매가)를 쓈.
+
+백엔드 상세 응답 필드명:
+- `deposit` → 보증금/전세금
+- `monthlyRent` → 월세
+- `price` → 매매가 (프론트의 `salePrice`에 대응)
+
+**수정**: normalizeProperty에서 `salePrice: p.price ?? p.salePrice` 로 매핑.
+위의 이슈 13 normalizeProperty에 이미 포함됨.
+
+---
+
+## 이슈 15: 지도 마커 안 보임 (markers 빈 배열)
+
+**원인**: 매물에 위도/경도가 저장되어 있지 않음.
+빠른 기록에서 "현재 위치 사용" / "지도에서 선택" 시 latitude/longitude를
+formData에 저장하고 있지만, 매물 생성 API에 전달하는지 확인 필요.
+
+**수정**: `PropertyNewPage.jsx`의 handleSubmit에서 payload에 `latitude`, `longitude` 필드가
+정상적으로 포함되는지 확인. 이미 포함되어 있다면, 백엔드의
+매물 생성 API가 좌표를 제대로 저장하는지는 백엔드 측 문제.
+
+현재는 프론트엔드에서 할 수 있는 것: 위치 정보가 없는 매물은 지도에서 무시 (markers가 빈 배열이어도 에러 없이 처리).
+
+---
+
 ## 수정할 파일 목록
 
 1. **`vite.config.js`** — `/temp-images` 프록시 추가
