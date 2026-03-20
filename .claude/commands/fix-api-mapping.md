@@ -197,6 +197,33 @@ const triggerPrefetch = (address, latitude, longitude) => {
 
 ---
 
+## 이슈 10: 상세 페이지 `/properties/undefined/detail` (ID가 undefined)
+
+**원인**: PropertyCard에서 `navigate(`/properties/${id}`)` 호출 시 `id`가 undefined.
+타임라인 페이지에서 데이터 파싱이 잘못되어 property 객체가 제대로 전달되지 않음.
+
+**수정**: 
+- 타임라인의 timelineGroups 파싱 수정으로 해결될 수 있음 (이슈 4와 연관)
+- PropertyCard에서 id 확인 방어 코드 추가:
+```js
+const propertyId = property.id || property.propertyId;
+if (!propertyId) return; // id 없으면 네비게이션 안 함
+```
+
+---
+
+## 이슈 11: 상세 페이지 API 응답 필드 매핑
+
+**원인**: PropertyDetailPage가 `/properties/:id/detail` API 응답을 파싱하는데,
+백엔드 응답 필드명이 프론트엔드 기대와 다를 수 있음.
+이미지도 `/temp-images/...` 경로라 프록시 없이 깨짐 (이슈 1).
+가격 표시도 priceInfo 중첩 구조일 수 있음 (이슈 3).
+
+**수정**: PropertyDetailPage에서도 `normalizeProperty()` 유틸 함수를 적용해서
+응답 데이터를 정규화한 후 사용.
+
+---
+
 ## 수정할 파일 목록
 
 1. **`vite.config.js`** — `/temp-images` 프록시 추가
@@ -204,8 +231,9 @@ const triggerPrefetch = (address, latitude, longitude) => {
 3. **`src/pages/HomePage.jsx`** — stats API 제거, recent 응답에서 통계 추출, 가격 정규화
 4. **`src/pages/TimelinePage.jsx`** — timelineGroups 구조 파싱, hasNext 기반 페이지네이션
 5. **`src/pages/MapPage.jsx`** — 마커 API 파라미터명 수정
-6. **`src/components/PropertyCard.jsx`** — priceInfo 중첩 구조 처리, totalFloor 지원
-7. **`src/lib/utils.js`** — normalizeProperty 유틸 함수 추가 (선택)
+6. **`src/components/PropertyCard.jsx`** — priceInfo 중첩 구조 처리, totalFloor 지원, id 방어코드
+7. **`src/pages/PropertyDetailPage.jsx`** — normalizeProperty 적용, 이미지/가격 필드 정규화
+8. **`src/lib/utils.js`** — normalizeProperty 유틸 함수 추가
 
 ---
 
