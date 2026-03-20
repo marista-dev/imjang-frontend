@@ -10,6 +10,15 @@ import {
   MapPin,
   Check,
   FileText,
+  Train,
+  Bus,
+  Store,
+  ShoppingCart,
+  Landmark,
+  Hospital,
+  Pill,
+  Car,
+  Building2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Drawer } from 'vaul';
@@ -21,36 +30,49 @@ import { ConfirmModal } from '@/components/ConfirmModal';
 import { Spinner } from '@/components/Spinner';
 import { cn, getRelativeDate, normalizeProperty } from '@/lib/utils';
 
-const CHECK_LABELS = {
-  sunlight: '채광',
-  ventilation: '환기',
-  noise: '소음 없음',
-  waterPressure: '수압 양호',
-  parking: '주차 가능',
-  elevator: '엘리베이터',
-  delivery: '택배 수령',
-  security: '보안 양호',
-};
-
-const SURROUNDING_LABELS = {
-  SUBWAY: '지하철',
-  BUS: '버스',
-  MART: '마트',
-  SCHOOL: '학교',
-  PARK: '공원',
-  CAFE: '카페',
-  HOSPITAL: '병원',
-  GYM: '헬스장',
-};
-
 const PRICE_RATING_LABELS = {
   CHEAP: { label: '저렴해요', emoji: '😊' },
-  REASONABLE: { label: '적당해요', emoji: '😐' },
+  REASONABLE: { label: '적정해요', emoji: '😐' },
   EXPENSIVE: { label: '비싸요', emoji: '😮' },
 };
 
+const PARKING_LABELS = {
+  AVAILABLE: '주차 가능',
+  NOT_AVAILABLE: '주차 불가',
+  CONDITIONAL: '조건부 주차',
+  UNKNOWN: null,
+};
+
+const ENVIRONMENT_LABELS = {
+  QUIET: '조용함',
+  BUSY_AREA: '번화가',
+  RESIDENTIAL: '주택가',
+  COMMERCIAL: '상업지구',
+  NEAR_PARK: '공원인접',
+  NEAR_MOUNTAIN: '산인접',
+  NEAR_RIVER: '하천인접',
+  GREEN_LACK: '녹지부족',
+  MAIN_ROAD: '대로변',
+  ALLEY: '골목안',
+  UNDER_CONSTRUCTION: '공사중',
+  NEAR_SCHOOL: '학교인근',
+};
+
+const CATEGORY_ICONS = {
+  CS2: Store,
+  MT1: ShoppingCart,
+  BK9: Landmark,
+  HP8: Hospital,
+  PM9: Pill,
+};
+
+const getCategoryIcon = (code) => {
+  const Icon = CATEGORY_ICONS[code] ?? Building2;
+  return Icon;
+};
+
 const ImageGallery = ({ images }) => {
-  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false, align: 'start' });
+  const [emblaRef] = useEmblaCarousel({ loop: false, align: 'start' });
   const [currentIndex, setCurrentIndex] = useState(0);
 
   if (!images?.length) {
@@ -108,7 +130,6 @@ const PropertyDetailPage = () => {
       toast.success('매물이 삭제되었어요.');
       queryClient.invalidateQueries({ queryKey: ['properties-recent'] });
       queryClient.invalidateQueries({ queryKey: ['properties-timeline'] });
-      queryClient.invalidateQueries({ queryKey: ['property-stats'] });
       navigate('/', { replace: true });
     },
     onError: () => toast.error('삭제에 실패했어요.'),
@@ -138,8 +159,10 @@ const PropertyDetailPage = () => {
     );
   }
 
-  const checkedItems = Object.entries(property.checkItems ?? {}).filter(([, v]) => v);
   const priceRating = PRICE_RATING_LABELS[property.priceRating];
+  const parkingLabel = property.parkingType ? PARKING_LABELS[property.parkingType] : null;
+  const environments = property.environments ?? [];
+  const locationInfo = property.locationInfo ?? null;
 
   return (
     <div className="min-h-screen bg-white pb-24">
@@ -170,19 +193,14 @@ const PropertyDetailPage = () => {
         <div className="mb-4">
           <div className="flex items-start gap-1.5">
             <MapPin size={16} className="mt-0.5 flex-shrink-0 text-primary" />
-            <div>
-              <p className="font-semibold text-slate-800">{property.address}</p>
-              {property.addressDetail && (
-                <p className="text-sm text-slate-500">{property.addressDetail}</p>
-              )}
-            </div>
+            <p className="font-semibold text-slate-800">{property.address}</p>
           </div>
           <p className="mt-1 pl-6 text-xs text-slate-400">
             {getRelativeDate(property.visitedAt)} 방문
           </p>
         </div>
 
-        {/* 가격 + 면적/층수 */}
+        {/* 가격 + 면적/층수/관리비 */}
         <div className="mb-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
           <PriceDisplay
             priceType={property.priceType}
@@ -198,6 +216,9 @@ const PropertyDetailPage = () => {
                 {property.floor ?? property.currentFloor}층
                 {property.totalFloors ? `/${property.totalFloors}층` : ''}
               </span>
+            )}
+            {property.maintenanceFee > 0 && (
+              <span>관리비 {property.maintenanceFee}만원</span>
             )}
           </div>
         </div>
@@ -216,8 +237,8 @@ const PropertyDetailPage = () => {
           )}
         </div>
 
-        {/* 배지: 입주 가능 / 재방문 */}
-        {(property.canMoveIn || property.revisitWanted) && (
+        {/* 배지: 입주 가능 / 재방문 / 주차 */}
+        {(property.canMoveIn || property.revisitWanted || parkingLabel) && (
           <div className="mb-4 flex flex-wrap gap-2">
             {property.canMoveIn && (
               <span className="rounded-full bg-primary-50 px-3 py-1 text-xs font-medium text-primary">
@@ -229,43 +250,89 @@ const PropertyDetailPage = () => {
                 재방문 의향 있음
               </span>
             )}
+            {parkingLabel && (
+              <span className="flex items-center gap-1 rounded-full border border-slate-200 px-3 py-1 text-xs font-medium text-slate-600">
+                <Car size={12} />
+                {parkingLabel}
+              </span>
+            )}
           </div>
         )}
 
-        {/* 체크리스트 */}
-        {checkedItems.length > 0 && (
+        {/* 환경 태그 (environments) */}
+        {environments.length > 0 && (
           <div className="mb-4">
-            <p className="mb-2 text-sm font-semibold text-slate-700">체크리스트</p>
-            <div className="grid grid-cols-2 gap-2">
-              {checkedItems.map(([key]) => (
-                <div
-                  key={key}
-                  className="flex items-center gap-2 rounded-xl border border-primary/20 bg-primary-50 px-3 py-2"
-                >
-                  <Check size={14} className="text-primary" />
-                  <span className="text-xs font-medium text-primary">
-                    {CHECK_LABELS[key] ?? key}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* 주변 시설 */}
-        {property.surroundings?.length > 0 && (
-          <div className="mb-4">
-            <p className="mb-2 text-sm font-semibold text-slate-700">주변 시설</p>
+            <p className="mb-2 text-sm font-semibold text-slate-700">주변 환경</p>
             <div className="flex flex-wrap gap-2">
-              {property.surroundings.map((s) => (
+              {environments.map((env) => (
                 <span
-                  key={s}
+                  key={env}
                   className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600"
                 >
-                  {SURROUNDING_LABELS[s] ?? s}
+                  {ENVIRONMENT_LABELS[env] ?? env}
                 </span>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* 교통 + 주변 시설 (locationInfo) */}
+        {locationInfo && (
+          <div className="mb-4 rounded-2xl border border-slate-200 bg-white p-4 space-y-3">
+            <p className="text-sm font-semibold text-slate-700">교통 및 주변 시설</p>
+
+            {/* 지하철 */}
+            {locationInfo.subway && (
+              <div className="flex items-center gap-3">
+                <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-blue-50">
+                  <Train size={16} className="text-blue-500" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-medium text-slate-700 truncate">
+                    {locationInfo.subway.nearestStation}
+                  </p>
+                  <p className="text-xs text-slate-400">
+                    {locationInfo.subway.distance}m · 도보 {locationInfo.subway.walkTime}분
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* 버스 */}
+            {locationInfo.bus && (
+              <div className="flex items-center gap-3">
+                <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-green-50">
+                  <Bus size={16} className="text-green-500" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-medium text-slate-700 truncate">
+                    {locationInfo.bus.nearestStop}
+                  </p>
+                  <p className="text-xs text-slate-400">{locationInfo.bus.distance}m</p>
+                </div>
+              </div>
+            )}
+
+            {/* 편의시설 */}
+            {locationInfo.amenities?.length > 0 && (
+              <div className="grid grid-cols-2 gap-2 pt-1">
+                {locationInfo.amenities.map((a) => {
+                  const Icon = getCategoryIcon(a.categoryCode);
+                  return (
+                    <div key={a.categoryCode} className="rounded-xl bg-slate-50 p-2.5">
+                      <div className="flex items-center gap-1.5 mb-0.5">
+                        <Icon size={13} className="text-slate-500" />
+                        <span className="text-xs font-medium text-slate-700">{a.category}</span>
+                        <span className="ml-auto text-xs text-slate-400">주변 {a.count}개</span>
+                      </div>
+                      <p className="text-xs text-slate-500 truncate">
+                        {a.nearestName} <span className="text-slate-400">{a.nearestDistance}m</span>
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
 

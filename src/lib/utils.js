@@ -63,6 +63,8 @@ export const normalizeProperty = (p) => ({
   ...p,
   // id: propertyId fallback
   id: p.id ?? p.propertyId ?? null,
+  // visitedAt: createdAt fallback (백엔드가 createdAt으로 반환)
+  visitedAt: p.visitedAt ?? p.createdAt ?? null,
   // 가격 정규화 (priceInfo 중첩 or flat)
   deposit: p.priceInfo?.deposit ?? p.deposit ?? null,
   monthlyRent: p.priceInfo?.monthlyRent ?? p.monthlyRent ?? null,
