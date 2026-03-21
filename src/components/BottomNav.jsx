@@ -32,7 +32,7 @@ const BottomNav = () => {
   return (
     <nav
       className={cn(
-        'fixed bottom-4 left-0 right-0 z-50 flex items-center justify-center gap-1.5 pb-safe',
+        'fixed bottom-6 left-0 right-0 z-50 flex items-center justify-center gap-1.5 pb-safe',
         'transition-all duration-300 ease-out',
         isHidden ? 'translate-y-[calc(100%+32px)] opacity-0' : 'translate-y-0 opacity-100',
       )}
@@ -51,12 +51,12 @@ const BottomNav = () => {
             type="button"
             onClick={() => navigate(path)}
             className={cn(
-              'flex w-[82px] flex-col items-center gap-0.5 rounded-full py-[9px] transition-all duration-200',
+              'flex w-[88px] flex-col items-center gap-1 rounded-full py-[11px] transition-all duration-200',
               isActive(path) ? 'bg-primary text-white' : 'text-slate-400',
             )}
           >
-            <Icon size={17} strokeWidth={1.8} />
-            <span className="text-[11px] font-medium leading-none">{label}</span>
+            <Icon size={20} strokeWidth={1.8} />
+            <span className="text-xs font-medium leading-none">{label}</span>
           </button>
         ))}
       </div>
