@@ -307,15 +307,14 @@ const MapPage = () => {
         <div className="absolute left-0 right-0 top-0 z-10 px-4 pt-4">
           <div className="flex gap-2">
             {/* 검색 */}
-            <form onSubmit={handleSearch} className="flex flex-1 items-center gap-2 rounded-full bg-white/90 px-4 shadow-md backdrop-blur-sm" style={{ height: 44 }}>
+            <form onSubmit={handleSearch} className="flex h-11 flex-1 items-center gap-2 rounded-full bg-white/90 px-4 shadow-md backdrop-blur-sm">
               <Search size={16} className="flex-shrink-0 text-slate-400" />
               <input
                 type="search"
                 placeholder="지역 검색"
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
-                className="flex-1 bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-400"
-                style={{ fontSize: 16 }}
+                className="flex-1 bg-transparent text-base text-slate-800 outline-none placeholder:text-slate-400"
               />
               {searchText && (
                 <button type="button" onClick={() => setSearchText('')}>
@@ -329,12 +328,11 @@ const MapPage = () => {
               type="button"
               onClick={() => setFilterOpen(true)}
               className={cn(
-                'flex flex-shrink-0 items-center gap-1.5 rounded-full px-3.5 shadow-md backdrop-blur-sm transition-colors',
+                'flex h-11 flex-shrink-0 items-center gap-1.5 rounded-full px-3.5 shadow-md backdrop-blur-sm transition-colors',
                 activeFilterCount > 0
                   ? 'bg-primary text-white'
                   : 'bg-white/90 text-slate-600',
               )}
-              style={{ height: 44 }}
             >
               <SlidersHorizontal size={16} />
               <span className="text-sm font-medium">필터</span>

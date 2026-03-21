@@ -345,7 +345,7 @@ const PropertyEditPage = () => {
             <p className="mb-2 text-sm font-medium text-slate-700">평수 (㎡)</p>
             <input type="text" inputMode="decimal" placeholder="예: 33"
               value={area} onChange={numInput(setArea)}
-              className="h-11 w-full rounded-xl border border-slate-200 px-4 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400" />
+              className="h-12 w-full rounded-xl border border-slate-200 px-4 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400" />
           </div>
 
           <div>
@@ -353,11 +353,11 @@ const PropertyEditPage = () => {
             <div className="flex items-center gap-2">
               <input type="text" inputMode="numeric" placeholder="현재층"
                 value={currentFloor} onChange={numInput(setCurrentFloor)}
-                className="h-11 w-full rounded-xl border border-slate-200 px-4 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400" />
+                className="h-12 w-full rounded-xl border border-slate-200 px-4 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400" />
               <span className="text-slate-400">/</span>
               <input type="text" inputMode="numeric" placeholder="전체층"
                 value={totalFloors} onChange={numInput(setTotalFloors)}
-                className="h-11 w-full rounded-xl border border-slate-200 px-4 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400" />
+                className="h-12 w-full rounded-xl border border-slate-200 px-4 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400" />
             </div>
           </div>
 

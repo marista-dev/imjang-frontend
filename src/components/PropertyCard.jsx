@@ -88,7 +88,7 @@ export const PropertyCard = ({ property, className }) => {
           <RatingStars rating={rating} size="sm" readOnly />
           <div className="flex items-center gap-1.5">
             {canMoveIn && (
-              <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-600">
+              <span className="rounded-md bg-primary-50 px-2 py-0.5 text-[10px] font-semibold text-primary">
                 입주가능
               </span>
             )}

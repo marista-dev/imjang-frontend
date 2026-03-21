@@ -48,7 +48,7 @@ const HomePage = () => {
           <button
             type="button"
             onClick={() => setMenuOpen(true)}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-emerald-200 to-emerald-500 active:scale-95 transition-all"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-primary active:scale-95 transition-all"
           >
             {user?.name ? (
               <span className="text-sm font-bold text-white">{user.name[0]}</span>
@@ -65,8 +65,8 @@ const HomePage = () => {
       {/* 통계 카드 */}
       <div className="mb-6 grid grid-cols-2 gap-3">
         <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-50">
-            <CalendarDays size={20} className="text-emerald-600" />
+          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-primary-50">
+            <CalendarDays size={20} className="text-primary" />
           </div>
           <div>
             <p className="text-xs text-slate-500">이번 달</p>

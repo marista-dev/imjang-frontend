@@ -33,9 +33,8 @@ export const ImageUploader = ({
             ...prev,
             { id: uploaded.imageId, url: uploaded.thumbnailUrl },
           ]);
-        } catch (err) {
+        } catch {
           toast.error('이미지 업로드에 실패했어요.');
-          console.error('이미지 업로드 실패:', err);
         }
       }
     },

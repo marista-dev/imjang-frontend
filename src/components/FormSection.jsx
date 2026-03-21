@@ -44,7 +44,7 @@ export const PriceInputWithHint = ({ label, value, onChange, placeholder }) => (
       placeholder={placeholder}
       value={value}
       onChange={onChange}
-      className="h-11 w-full rounded-xl border border-slate-200 px-4 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400"
+      className="h-12 w-full rounded-xl border border-slate-200 px-4 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400"
     />
     {value && Number(value) >= 1000 && (
       <p className="mt-1 text-xs text-primary">{formatPrice(Number(value))}</p>

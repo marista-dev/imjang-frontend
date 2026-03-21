@@ -93,7 +93,7 @@
     appearance: none;
     height: 6px;
     border-radius: 9999px;
-    background: #E2E8F0;
+    background: theme('colors.slate.200');
     outline: none;
   }
   input[type="range"]::-webkit-slider-thumb {
@@ -102,7 +102,7 @@
     width: 24px;
     height: 24px;
     border-radius: 50%;
-    background: #059669;
+    background: theme('colors.primary.DEFAULT');
     cursor: pointer;
     border: 3px solid white;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
@@ -111,7 +111,7 @@
     width: 24px;
     height: 24px;
     border-radius: 50%;
-    background: #059669;
+    background: theme('colors.primary.DEFAULT');
     cursor: pointer;
     border: 3px solid white;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
