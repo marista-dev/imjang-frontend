@@ -6,18 +6,16 @@ import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { toast } from 'sonner';
 import { mapApi } from '@/api/map';
 import { PriceDisplay } from '@/components/PriceDisplay';
-import { RatingStars } from '@/components/RatingStars';
 import { Spinner } from '@/components/Spinner';
 import { cn, normalizeProperty, getImageUrl } from '@/lib/utils';
 
 // ─── 헬퍼 ────────────────────────────────────────────────────────────────────
 
-// 마커 색상 상수 (CSS 변수 대신 상수로 관리 — CustomOverlay innerHTML 특성상)
 const MARKER_COLORS = {
-  HIGH: '#22C55E',    // success (green-500)
-  MEDIUM: '#F59E0B',  // warning (amber-500)
-  LOW: '#EF4444',     // danger (red-500)
-  LABEL_TEXT: '#334155', // slate-700
+  HIGH: '#22C55E',
+  MEDIUM: '#F59E0B',
+  LOW: '#EF4444',
+  LABEL_TEXT: '#334155',
   LABEL_BG: 'rgba(255,255,255,0.9)',
 };
 
@@ -50,6 +48,77 @@ const PRICE_TYPE_FILTERS = [
   { value: 'SALE', label: '매매' },
 ];
 
+const CARD_W = 160;
+const CARD_H = 180;
+
+// ─── 미니카드 컴포넌트 ───────────────────────────────────────────────────────
+
+const MiniCard = ({ property, position, onClose, onDetail }) => {
+  const { side, x, y } = position;
+  const thumbUrl = property.images?.[0]?.url ?? (property.thumbnailUrl ? getImageUrl(property.thumbnailUrl) : null);
+  const rating = property.rating ?? 0;
+  const ratingColor = rating >= 4 ? '#22C55E' : rating === 3 ? '#F59E0B' : '#EF4444';
+
+  return (
+    <div
+      className="absolute z-20 overflow-hidden rounded-xl bg-white shadow-lg"
+      style={{
+        width: CARD_W,
+        left: x,
+        top: y,
+        animation: `minicard-in-${side} 180ms ease-out both`,
+      }}
+    >
+      {/* 썸네일 */}
+      <div className="relative h-[72px] bg-slate-100">
+        {thumbUrl ? (
+          <img src={thumbUrl} alt="" loading="lazy" className="h-full w-full object-cover" />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center">
+            <ImageOff size={20} className="text-slate-300" />
+          </div>
+        )}
+        {/* 별점 뱃지 */}
+        <span
+          className="absolute bottom-1 left-1 rounded px-1.5 py-0.5 text-[10px] font-bold text-white"
+          style={{ background: ratingColor }}
+        >
+          ★ {rating}
+        </span>
+        {/* 닫기 */}
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); onClose(); }}
+          className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/40 text-white"
+        >
+          <X size={10} />
+        </button>
+      </div>
+
+      {/* 정보 */}
+      <div className="px-2.5 py-2">
+        <p className="truncate text-xs font-semibold text-slate-800">
+          {getDongName(property.address)}
+        </p>
+        <PriceDisplay
+          priceType={property.priceType}
+          deposit={property.deposit}
+          monthlyRent={property.monthlyRent}
+          salePrice={property.salePrice}
+          className="mt-0.5 text-xs"
+        />
+        <button
+          type="button"
+          onClick={() => onDetail(property.id)}
+          className="mt-1.5 text-xs font-medium text-primary"
+        >
+          상세보기 →
+        </button>
+      </div>
+    </div>
+  );
+};
+
 // ─── 메인 컴포넌트 ────────────────────────────────────────────────────────────
 
 const MapPage = () => {
@@ -61,14 +130,14 @@ const MapPage = () => {
   const overlaysRef = useRef([]);
   const allMarkersRef = useRef([]);
   const debounceRef = useRef(null);
-  const filtersRef = useRef(null); // 최신 filters 참조용
+  const filtersRef = useRef(null);
+  const selectedOverlayRef = useRef(null);
 
   // 상태
   const [mapReady, setMapReady] = useState(false);
   const [mapError, setMapError] = useState(false);
   const [loadingMarkers, setLoadingMarkers] = useState(false);
-  const [selectedProperty, setSelectedProperty] = useState(null);
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [miniCard, setMiniCard] = useState(null); // { property, position }
   const [filterOpen, setFilterOpen] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [filters, setFilters] = useState({
@@ -76,13 +145,65 @@ const MapPage = () => {
     priceType: '',
   });
 
-  // filters 최신값 ref 동기화
   filtersRef.current = filters;
 
-  // ── 마커 렌더링 ─────────────────────────────────────────────────────────────
+  // ── 미니카드 닫기 ──────────────────────────────────────────────────────────
+
+  const closeMiniCard = useCallback(() => {
+    // 이전 선택 마커 복원
+    if (selectedOverlayRef.current) {
+      const dot = selectedOverlayRef.current;
+      dot.style.transform = 'scale(1)';
+      dot.style.border = '2.5px solid white';
+      selectedOverlayRef.current = null;
+    }
+    setMiniCard(null);
+  }, []);
+
+  // ── 마커 클릭 핸들러 ──────────────────────────────────────────────────────
+
+  const handleMarkerClick = useCallback((p, dot, latlng) => {
+    const map = mapRef.current;
+    const container = mapContainerRef.current;
+    if (!map || !container) return;
+
+    // 이전 마커 복원
+    if (selectedOverlayRef.current && selectedOverlayRef.current !== dot) {
+      selectedOverlayRef.current.style.transform = 'scale(1)';
+      selectedOverlayRef.current.style.border = '2.5px solid white';
+    }
+
+    // 선택 마커 강조
+    dot.style.transform = 'scale(1.3)';
+    dot.style.border = '3px solid white';
+    selectedOverlayRef.current = dot;
+
+    // 픽셀 좌표 계산
+    const proj = map.getProjection();
+    const point = proj.containerPointFromCoords(latlng);
+    const mx = point.x;
+    const my = point.y;
+    const mapW = container.offsetWidth;
+    const mapH = container.offsetHeight;
+
+    // 좌우 방향 결정
+    const side = mx < mapW / 2 ? 'right' : 'left';
+    let cardX = side === 'right' ? mx + 20 : mx - CARD_W - 20;
+    let cardY = my - CARD_H / 2;
+
+    // 경계 클램핑
+    if (cardY < 48) cardY = 48;
+    if (cardY > mapH - CARD_H - 8) cardY = mapH - CARD_H - 8;
+    if (cardX < 4) cardX = 4;
+    if (cardX > mapW - CARD_W - 4) cardX = mapW - CARD_W - 4;
+
+    const property = normalizeProperty(p);
+    setMiniCard({ property, position: { side, x: cardX, y: cardY } });
+  }, []);
+
+  // ── 마커 렌더링 ───────────────────────────────────────────────────────────
 
   const renderMarkers = useCallback((data, activeFilters) => {
-    // 기존 오버레이 제거
     overlaysRef.current.forEach((o) => o.setMap(null));
     overlaysRef.current = [];
     if (!mapRef.current || !window.kakao?.maps) return;
@@ -98,6 +219,7 @@ const MapPage = () => {
 
       const color = getMarkerColor(rating);
       const dong = getDongName(p.address);
+      const latlng = new window.kakao.maps.LatLng(p.latitude, p.longitude);
 
       const el = document.createElement('div');
       el.style.cssText = 'display:flex;flex-direction:column;align-items:center;cursor:pointer;user-select:none;';
@@ -108,7 +230,7 @@ const MapPage = () => {
         background: color, borderRadius: '50%',
         border: '2.5px solid white',
         boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
-        transition: 'transform .15s',
+        transition: 'transform .15s, border .15s',
       });
       el.appendChild(dot);
 
@@ -123,13 +245,13 @@ const MapPage = () => {
         el.appendChild(label);
       }
 
-      el.addEventListener('click', () => {
-        setSelectedProperty(normalizeProperty(p));
-        setDrawerOpen(true);
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        handleMarkerClick(p, dot, latlng);
       });
 
       const overlay = new window.kakao.maps.CustomOverlay({
-        position: new window.kakao.maps.LatLng(p.latitude, p.longitude),
+        position: latlng,
         content: el,
         yAnchor: 0.5,
         zIndex: 1,
@@ -137,9 +259,9 @@ const MapPage = () => {
       overlay.setMap(mapRef.current);
       overlaysRef.current.push(overlay);
     });
-  }, []);
+  }, [handleMarkerClick]);
 
-  // ── 마커 로드 ────────────────────────────────────────────────────────────────
+  // ── 마커 로드 ─────────────────────────────────────────────────────────────
 
   const loadMarkers = useCallback(async () => {
     const map = mapRef.current;
@@ -168,7 +290,7 @@ const MapPage = () => {
     }
   }, [renderMarkers]);
 
-  // ── 카카오맵 초기화 ──────────────────────────────────────────────────────────
+  // ── 카카오맵 초기화 ───────────────────────────────────────────────────────
 
   useEffect(() => {
     const initMap = (lat, lng) => {
@@ -200,7 +322,6 @@ const MapPage = () => {
       return;
     }
 
-    // SDK 로드 대기 (최대 6초)
     let elapsed = 0;
     const check = setInterval(() => {
       elapsed += 200;
@@ -216,7 +337,7 @@ const MapPage = () => {
     return () => clearInterval(check);
   }, []);
 
-  // ── 지도 준비 후 이벤트 바인딩 ──────────────────────────────────────────────
+  // ── 지도 준비 후 이벤트 바인딩 ────────────────────────────────────────────
 
   useEffect(() => {
     if (!mapReady) return;
@@ -229,21 +350,41 @@ const MapPage = () => {
       debounceRef.current = setTimeout(loadMarkers, 500);
     };
 
+    // 지도 클릭 시 미니카드 닫기
+    const onClick = () => closeMiniCard();
+
     window.kakao.maps.event.addListener(map, 'idle', onIdle);
+    window.kakao.maps.event.addListener(map, 'click', onClick);
     return () => {
       window.kakao.maps.event.removeListener(map, 'idle', onIdle);
+      window.kakao.maps.event.removeListener(map, 'click', onClick);
       clearTimeout(debounceRef.current);
     };
-  }, [mapReady, loadMarkers]);
+  }, [mapReady, loadMarkers, closeMiniCard]);
 
-  // ── 필터 변경 시 마커 재렌더 ────────────────────────────────────────────────
+  // ── 지도 이동/줌 시 미니카드 닫기 ─────────────────────────────────────────
 
   useEffect(() => {
     if (!mapReady) return;
-    renderMarkers(allMarkersRef.current, filters);
-  }, [filters, mapReady, renderMarkers]);
+    const map = mapRef.current;
+    const onMove = () => closeMiniCard();
+    window.kakao.maps.event.addListener(map, 'dragstart', onMove);
+    window.kakao.maps.event.addListener(map, 'zoom_start', onMove);
+    return () => {
+      window.kakao.maps.event.removeListener(map, 'dragstart', onMove);
+      window.kakao.maps.event.removeListener(map, 'zoom_start', onMove);
+    };
+  }, [mapReady, closeMiniCard]);
 
-  // ── 검색 ─────────────────────────────────────────────────────────────────────
+  // ── 필터 변경 시 마커 재렌더 ──────────────────────────────────────────────
+
+  useEffect(() => {
+    if (!mapReady) return;
+    closeMiniCard();
+    renderMarkers(allMarkersRef.current, filters);
+  }, [filters, mapReady, renderMarkers, closeMiniCard]);
+
+  // ── 검색 ──────────────────────────────────────────────────────────────────
 
   const handleSearch = (e) => {
     e?.preventDefault();
@@ -264,7 +405,7 @@ const MapPage = () => {
     });
   };
 
-  // ── 필터 토글 ────────────────────────────────────────────────────────────────
+  // ── 필터 토글 ─────────────────────────────────────────────────────────────
 
   const toggleRating = (cat) =>
     setFilters((prev) => ({
@@ -274,11 +415,10 @@ const MapPage = () => {
         : [...prev.ratings, cat],
     }));
 
-  const activePriceTypeFilters = PRICE_TYPE_FILTERS.filter(({ value }) => value !== '');
   const activeFilterCount =
     (3 - filters.ratings.length) + (filters.priceType ? 1 : 0);
 
-  // ── 렌더 ─────────────────────────────────────────────────────────────────────
+  // ── 렌더 ──────────────────────────────────────────────────────────────────
 
   return (
     <div className="relative h-screen w-full overflow-hidden">
@@ -354,63 +494,15 @@ const MapPage = () => {
         </div>
       )}
 
-      {/* ── 하단 요약 카드 ─────────────────────────────────────────────────────── */}
-      <Drawer.Root open={drawerOpen} onOpenChange={setDrawerOpen}>
-        <Drawer.Portal>
-          <Drawer.Overlay className="fixed inset-0 z-[90] bg-black/20" />
-          <Drawer.Content className="fixed bottom-0 left-0 right-0 z-[91] mx-auto w-full max-w-app rounded-t-2xl bg-white px-5 pb-safe pt-4 shadow-xl">
-            <VisuallyHidden><Drawer.Title>매물 요약</Drawer.Title></VisuallyHidden>
-            <Drawer.Handle className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-slate-300" />
-
-            {selectedProperty && (
-              <div className="mb-4 flex items-center gap-3">
-                {/* 썸네일 */}
-                <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl bg-slate-100">
-                  {selectedProperty.thumbnailUrl ? (
-                    <img
-                      src={getImageUrl(selectedProperty.thumbnailUrl)}
-                      alt={selectedProperty.address}
-                      loading="lazy"
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center">
-                      <ImageOff size={24} className="text-slate-300" />
-                    </div>
-                  )}
-                </div>
-
-                {/* 정보 */}
-                <div className="flex min-w-0 flex-1 flex-col gap-1">
-                  <p className="truncate text-base font-semibold text-slate-800">
-                    {selectedProperty.address}
-                  </p>
-                  <PriceDisplay
-                    priceType={selectedProperty.priceType}
-                    deposit={selectedProperty.deposit}
-                    monthlyRent={selectedProperty.monthlyRent}
-                    salePrice={selectedProperty.salePrice}
-                    className="text-sm"
-                  />
-                  <RatingStars rating={selectedProperty.rating ?? 0} readOnly size="sm" />
-                </div>
-
-                {/* 상세보기 버튼 */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setDrawerOpen(false);
-                    navigate(`/properties/${selectedProperty.id}`);
-                  }}
-                  className="flex-shrink-0 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white active:scale-95"
-                >
-                  상세보기
-                </button>
-              </div>
-            )}
-          </Drawer.Content>
-        </Drawer.Portal>
-      </Drawer.Root>
+      {/* ── 미니카드 ─────────────────────────────────────────────────────────── */}
+      {miniCard && (
+        <MiniCard
+          property={miniCard.property}
+          position={miniCard.position}
+          onClose={closeMiniCard}
+          onDetail={(id) => { closeMiniCard(); navigate(`/properties/${id}`); }}
+        />
+      )}
 
       {/* ── 필터 Drawer ────────────────────────────────────────────────────────── */}
       <Drawer.Root open={filterOpen} onOpenChange={setFilterOpen}>
