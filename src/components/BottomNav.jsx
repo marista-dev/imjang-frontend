@@ -20,7 +20,7 @@ const HIDDEN_PATTERNS = [
 const BottomNav = () => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const scrollDir = useScrollDirection(10);
+  const scrollDir = useScrollDirection(10, pathname);
 
   if (HIDDEN_PATTERNS.some((p) => p.test(pathname))) return null;
 
