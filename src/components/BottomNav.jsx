@@ -50,7 +50,7 @@ const BottomNav = () => {
             type="button"
             onClick={() => navigate(path)}
             className={cn(
-              'flex min-w-[44px] flex-col items-center gap-0.5 rounded-full px-[28px] py-[9px] transition-all duration-200',
+              'flex w-[82px] flex-col items-center gap-0.5 rounded-full py-[9px] transition-all duration-200',
               isActive(path)
                 ? 'bg-primary text-white'
                 : 'text-slate-400',
