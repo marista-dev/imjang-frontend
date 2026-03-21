@@ -223,6 +223,14 @@ const PropertyDetailPage = () => {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [photoViewerIdx, setPhotoViewerIdx] = useState(null);
 
+  // 포토뷰어 열릴 때 body 스크롤 잠금
+  useEffect(() => {
+    if (photoViewerIdx !== null) {
+      document.body.style.overflow = 'hidden';
+      return () => { document.body.style.overflow = ''; };
+    }
+  }, [photoViewerIdx]);
+
   const { data: property, isLoading, isError } = useQuery({
     queryKey: ['property-detail', id],
     queryFn: () => propertyApi.getDetail(id).then((r) => normalizeProperty(r.data)),
@@ -574,7 +582,10 @@ const PropertyDetailPage = () => {
 
       {/* 사진 전체화면 뷰어 */}
       {photoViewerIdx !== null && property.images?.length > 0 && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black">
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black overflow-hidden touch-none"
+          onClick={(e) => { if (e.target === e.currentTarget) setPhotoViewerIdx(null); }}
+        >
           <button
             type="button"
             onClick={() => setPhotoViewerIdx(null)}
@@ -588,7 +599,8 @@ const PropertyDetailPage = () => {
           <img
             src={property.images[photoViewerIdx].originalUrl || property.images[photoViewerIdx].url}
             alt={`사진 ${photoViewerIdx + 1}`}
-            className="max-h-full max-w-full object-contain"
+            className="max-h-[100dvh] max-w-full object-contain select-none"
+            draggable={false}
           />
           {photoViewerIdx > 0 && (
             <button
