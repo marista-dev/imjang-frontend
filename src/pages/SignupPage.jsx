@@ -79,7 +79,7 @@ const SignupPage = () => {
                 )}
                 {...register('name', { required: '이름을 입력해주세요.' })}
               />
-              {errors.name && <p className="mt-1 text-xs text-danger">{errors.name.message}</p>}
+              {errors.name && <p className="mt-1 text-sm text-danger">{errors.name.message}</p>}
             </div>
 
             {/* 이메일 */}
@@ -101,7 +101,7 @@ const SignupPage = () => {
                   },
                 })}
               />
-              {errors.email && <p className="mt-1 text-xs text-danger">{errors.email.message}</p>}
+              {errors.email && <p className="mt-1 text-sm text-danger">{errors.email.message}</p>}
             </div>
 
             {/* 비밀번호 */}
@@ -127,7 +127,7 @@ const SignupPage = () => {
                 </button>
               </div>
               {errors.password && (
-                <p className="mt-1 text-xs text-danger">{errors.password.message}</p>
+                <p className="mt-1 text-sm text-danger">{errors.password.message}</p>
               )}
 
               {/* 비밀번호 조건 실시간 표시 */}
@@ -144,7 +144,7 @@ const SignupPage = () => {
                         )}
                         <span
                           className={cn(
-                            'text-xs',
+                            'text-sm',
                             passed ? 'text-success' : 'text-slate-400'
                           )}
                         >

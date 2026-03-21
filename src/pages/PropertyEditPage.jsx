@@ -429,7 +429,7 @@ const PropertyEditPage = () => {
                 background: `linear-gradient(to right, #059669 ${maintenanceFee * 2}%, #E2E8F0 ${maintenanceFee * 2}%)`,
               }}
             />
-            <div className="mt-1 flex justify-between text-xs text-slate-400">
+            <div className="mt-1 flex justify-between text-sm text-slate-400">
               <span>0만원</span>
               <span>50만원</span>
             </div>

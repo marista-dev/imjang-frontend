@@ -71,7 +71,7 @@ const LoginPage = () => {
                   },
                 })}
               />
-              {errors.email && <p className="mt-1 text-xs text-danger">{errors.email.message}</p>}
+              {errors.email && <p className="mt-1 text-sm text-danger">{errors.email.message}</p>}
             </div>
 
             {/* 비밀번호 */}
@@ -97,7 +97,7 @@ const LoginPage = () => {
                 </button>
               </div>
               {errors.password && (
-                <p className="mt-1 text-xs text-danger">{errors.password.message}</p>
+                <p className="mt-1 text-sm text-danger">{errors.password.message}</p>
               )}
             </div>
 
@@ -106,7 +106,7 @@ const LoginPage = () => {
               <button
                 type="button"
                 onClick={() => toast.info('비밀번호 재설정 기능은 준비 중이에요.')}
-                className="text-xs text-slate-400"
+                className="text-sm text-slate-400"
               >
                 비밀번호를 잊으셨나요?
               </button>

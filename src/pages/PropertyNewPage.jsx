@@ -97,7 +97,7 @@ const ImageSlot = ({ label, required, image, onUpload, onRemove }) => {
           <X size={14} className="text-white" />
         </button>
         {label && (
-          <span className="absolute bottom-1 left-1 rounded bg-black/50 px-1.5 py-0.5 text-xs text-white">
+          <span className="absolute bottom-1 left-1 rounded bg-black/50 px-1.5 py-0.5 text-sm text-white">
             {label}
           </span>
         )}
@@ -119,7 +119,7 @@ const ImageSlot = ({ label, required, image, onUpload, onRemove }) => {
       ) : (
         <>
           <Camera size={20} className={required ? 'text-danger/50' : 'text-slate-400'} />
-          <span className={cn('text-xs', required ? 'text-danger/60' : 'text-slate-400')}>
+          <span className={cn('text-sm', required ? 'text-danger/60' : 'text-slate-400')}>
             {label || '추가'}
           </span>
         </>
@@ -238,7 +238,7 @@ const MapSelectOverlay = ({ onConfirm, onClose }) => {
 
       {/* 하단 주소 + 확인 */}
       <div className="border-t border-slate-100 px-5 pb-safe pt-4">
-        <p className="mb-1 text-xs text-slate-500">선택된 위치</p>
+        <p className="mb-1 text-sm text-slate-500">선택된 위치</p>
         <p className="mb-4 truncate text-sm font-medium text-slate-800">{currentAddress}</p>
         <button
           type="button"
@@ -568,7 +568,7 @@ const PropertyNewPage = () => {
                   background: `linear-gradient(to right, #059669 ${form.maintenanceFee * 2}%, #E2E8F0 ${form.maintenanceFee * 2}%)`,
                 }}
               />
-              <div className="mt-1 flex justify-between text-xs text-slate-400">
+              <div className="mt-1 flex justify-between text-sm text-slate-400">
                 <span>0만원</span>
                 <span>50만원</span>
               </div>
@@ -764,7 +764,7 @@ const PropertyNewPage = () => {
         {/* ── 하단 고정 버튼 ───────────────────────────────────── */}
         <div className="fixed bottom-0 left-0 right-0 z-20 mx-auto w-full max-w-app border-t border-slate-100 bg-white/95 px-5 pb-safe pt-3 backdrop-blur-sm">
           {!allRequiredDone && (
-            <p className="mb-2 text-center text-xs text-slate-400">
+            <p className="mb-2 text-center text-sm text-slate-400">
               필수 항목 {5 - requiredDone}개를 더 입력해주세요
             </p>
           )}

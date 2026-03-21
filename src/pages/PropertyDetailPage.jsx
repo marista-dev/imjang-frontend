@@ -480,7 +480,7 @@ const PropertyDetailPage = () => {
               {environments.map((env) => (
                 <span
                   key={env}
-                  className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary"
+                  className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-sm font-medium text-primary"
                 >
                   {ENVIRONMENT_LABELS[env] ?? env}
                 </span>

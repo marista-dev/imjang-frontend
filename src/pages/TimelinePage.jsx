@@ -129,7 +129,7 @@ const TimelinePage = () => {
               type="button"
               onClick={() => setActiveFilter(id)}
               className={cn(
-                'flex-shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors',
+                'flex-shrink-0 rounded-full px-3 py-1.5 text-sm font-medium transition-colors',
                 activeFilter === id
                   ? 'bg-primary text-white'
                   : 'border border-slate-200 bg-white text-slate-500',
