@@ -32,7 +32,7 @@ const BottomNav = () => {
   return (
     <nav
       className={cn(
-        'fixed bottom-4 left-0 right-0 z-50 flex items-center justify-center gap-2 pb-safe',
+        'fixed bottom-4 left-0 right-0 z-50 flex items-center justify-center gap-1.5 pb-safe',
         'transition-all duration-300 ease-out',
         isHidden ? 'translate-y-[calc(100%+32px)] opacity-0' : 'translate-y-0 opacity-100',
       )}
