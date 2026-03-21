@@ -74,6 +74,14 @@ maintenanceFee     ❌ 보내지 않음 (백엔드는 필요)
 
 ### 기타
 - UI 자체는 정상 (useBlocker 해결, 폼 로드 정상)
+- 수정 페이지에서 위치정보 수정 섹션은 제거 (수정할 필요 없음)
+
+## C-005: 수정 페이지 사진 삭제 400 에러
+- **상태**: 삭제 실패 (400 Bad Request)
+- **원인**: 백엔드 detail API가 이미지를 **문자열 배열**로만 반환: `["/temp-images/..."]`
+  프론트엔드 `normalizeProperty()`가 이걸 `[{id: 0, url: "..."}]`로 변환 (배열 인덱스를 id로 사용)
+  따라서 `DELETE /properties/17/images/0` 호출 → 실제 DB에 imageId=0은 없음 → 400
+- **근본 원인**: 백엔드 detail API의 `images` 필드에 이미지 ID가 포함되지 않음
 
 ---
 
@@ -155,3 +163,67 @@ NEAR_PARK, NEAR_MOUNTAIN, NEAR_RIVER, GREEN_LACK,
 MAIN_ROAD, ALLEY, UNDER_CONSTRUCTION, NEAR_SCHOOL
 ```
 프론트엔드에서 보내는 값이 이 enum과 정확히 일치해야 함.
+
+### 해결 방향: 방안 B (프론트 축소)
+- 프론트에서 백엔드 DTO에 맞는 7개 필드만 전송
+- 위치정보 수정 섹션 제거 (수정할 필요 없음)
+- `FAIR` → `REASONABLE` 매핑 필수
+- `surroundings` → `environments` 필드명 변경 필수
+
+---
+
+## B-002: 매물 상세 API images 필드에 이미지 ID 누락 (GET /properties/:id/detail)
+
+### 현재 상황
+detail API의 `images` 필드가 **문자열 URL 배열**만 반환:
+```json
+"images": ["/temp-images/user2/2026/03/thumb_xxx.png"]
+```
+
+### 문제
+프론트엔드에서 이미지 삭제 시 `DELETE /properties/:id/images/:imageId` 호출 필요.
+하지만 실제 이미지 ID를 알 수 없어 삭제 불가.
+
+### 해결 방안
+
+**방안 A (PRD): detail API 응답에 이미지 ID 포함 (권장)**
+
+현재 `PropertyDetailResponse`의 images 필드를 문자열 배열에서 **객체 배열**로 변경:
+
+AS-IS:
+```java
+@Schema(description = "이미지 URL 목록")
+List<String> images
+```
+
+TO-BE:
+```java
+@Schema(description = "이미지 목록")
+List<PropertyImageDto> images
+
+// 새 DTO
+public record PropertyImageDto(
+    @Schema(description = "이미지 ID", example = "42")
+    Long imageId,
+    
+    @Schema(description = "썸네일 URL")
+    String thumbnailUrl,
+    
+    @Schema(description = "원본 URL")
+    String originalUrl
+) {}
+```
+
+응답 예시:
+```json
+"images": [
+  { "imageId": 42, "thumbnailUrl": "/temp-images/.../thumb_xxx.png", "originalUrl": "/images/.../xxx.png" },
+  { "imageId": 43, "thumbnailUrl": "/temp-images/.../thumb_yyy.png", "originalUrl": "/images/.../yyy.png" }
+]
+```
+
+이렇게 하면 프론트엔드에서 `imageId`를 알 수 있어 삭제 API 호출 가능.
+
+**방안 B: 프론트에서 삭제 기능 비활성화 (임시)**
+- 수정 페이지에서 이미지 삭제 버튼을 숨김
+- 백엔드 API 수정 후 복원
