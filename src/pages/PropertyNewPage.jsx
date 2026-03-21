@@ -704,8 +704,8 @@ const PropertyNewPage = () => {
           {/* ── 섹션 4: 사진 기록 ─────────────────────────────────── */}
           <Section>
             <div>
-              <SectionTitle required>사진 기록</SectionTitle>
-              <p className="mt-0.5 text-xs text-slate-400">외관, 거실, 특이사항은 필수 권장</p>
+              <SectionTitle>사진 기록</SectionTitle>
+              <p className="mt-0.5 text-xs text-slate-400">외관, 거실, 특이사항 권장</p>
             </div>
 
             {/* 필수 3칸 */}
@@ -714,7 +714,7 @@ const PropertyNewPage = () => {
                 <ImageSlot
                   key={key}
                   label={label}
-                  required
+                  required={false}
                   image={slotImage(idx)}
                   onUpload={handleImageUpload}
                   onRemove={handleImageRemove}
