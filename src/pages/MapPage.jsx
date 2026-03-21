@@ -100,21 +100,27 @@ const MapPage = () => {
 
       const el = document.createElement('div');
       el.style.cssText = 'display:flex;flex-direction:column;align-items:center;cursor:pointer;user-select:none;';
-      el.innerHTML = `
-        <div style="
-          width:20px;height:20px;
-          background:${color};
-          border-radius:50%;
-          border:2.5px solid white;
-          box-shadow:0 2px 6px rgba(0,0,0,0.2);
-          transition:transform .15s;
-        "></div>
-        ${dong ? `<span style="
-          margin-top:2px;font-size:12px;font-weight:500;
-          color:${MARKER_COLORS.LABEL_TEXT};background:${MARKER_COLORS.LABEL_BG};
-          padding:1px 5px;border-radius:4px;white-space:nowrap;
-        ">${dong}</span>` : ''}
-      `;
+
+      const dot = document.createElement('div');
+      Object.assign(dot.style, {
+        width: '20px', height: '20px',
+        background: color, borderRadius: '50%',
+        border: '2.5px solid white',
+        boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
+        transition: 'transform .15s',
+      });
+      el.appendChild(dot);
+
+      if (dong) {
+        const label = document.createElement('span');
+        label.textContent = dong;
+        Object.assign(label.style, {
+          marginTop: '2px', fontSize: '12px', fontWeight: '500',
+          color: MARKER_COLORS.LABEL_TEXT, background: MARKER_COLORS.LABEL_BG,
+          padding: '1px 5px', borderRadius: '4px', whiteSpace: 'nowrap',
+        });
+        el.appendChild(label);
+      }
 
       el.addEventListener('click', () => {
         setSelectedProperty(normalizeProperty(p));

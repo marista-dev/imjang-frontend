@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useState, useEffect, useCallback } from 'react';
+import { useParams, useNavigate, useBlocker } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ChevronLeft, ImagePlus, X, Check, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
@@ -10,6 +10,7 @@ import { imageApi } from '@/api/image';
 import { RatingStars } from '@/components/RatingStars';
 import { Spinner } from '@/components/Spinner';
 import { cn, formatPrice } from '@/lib/utils';
+import { Section, SectionTitle, ChipButton, PriceInputWithHint } from '@/components/FormSection';
 
 const PRICE_TYPES = [
   { value: 'MONTHLY', label: '월세' },
@@ -55,33 +56,7 @@ const openAddressSearch = (onSelect) => {
   }).open();
 };
 
-// ─── 섹션 래퍼 (NewPage와 동일) ──────────────────────────────────────────────
-const Section = ({ children, className }) => (
-  <div className={cn('rounded-2xl border border-slate-200 bg-white p-5 space-y-4', className)}>
-    {children}
-  </div>
-);
-
-const SectionTitle = ({ children }) => (
-  <p className="text-base font-bold text-slate-800">{children}</p>
-);
-
-// ─── 칩 버튼 (NewPage와 동일) ────────────────────────────────────────────────
-const ChipButton = ({ active, onClick, children, className }) => (
-  <button
-    type="button"
-    onClick={onClick}
-    className={cn(
-      'rounded-full px-4 py-2 text-sm font-medium transition-all active:scale-95',
-      active ? 'bg-primary text-white' : 'bg-slate-100 text-slate-500',
-      className,
-    )}
-  >
-    {children}
-  </button>
-);
-
-const EditImageSection = ({ propertyId, images, onImagesChange }) => {
+const EditImageSection = ({ propertyId, images, onImagesChange, onDirty }) => {
   const [uploading, setUploading] = useState(false);
 
   const handleAdd = async (files) => {
@@ -95,6 +70,7 @@ const EditImageSection = ({ propertyId, images, onImagesChange }) => {
       try {
         const res = await imageApi.addToProperty(propertyId, file);
         onImagesChange((prev) => [...prev, { id: res.data.imageId, url: res.data.thumbnailUrl }]);
+        onDirty?.();
       } catch {
         toast.error('이미지 업로드에 실패했어요.');
       }
@@ -106,6 +82,7 @@ const EditImageSection = ({ propertyId, images, onImagesChange }) => {
     try {
       await imageApi.deleteFromProperty(propertyId, imageId);
       onImagesChange((prev) => prev.filter((img) => img.id !== imageId));
+      onDirty?.();
     } catch {
       toast.error('이미지 삭제에 실패했어요.');
     }
@@ -200,7 +177,7 @@ const PropertyEditPage = () => {
     setMemo(property.memo ?? '');
   }, [property]);
 
-  // P3 #24: 비저장 변경사항 경고
+  // 비저장 변경사항 경고: 브라우저 탭 닫기/새로고침
   useEffect(() => {
     if (!isDirty) return;
     const handler = (e) => {
@@ -211,7 +188,29 @@ const PropertyEditPage = () => {
     return () => window.removeEventListener('beforeunload', handler);
   }, [isDirty]);
 
+  // 비저장 변경사항 경고: 앱 내 라우트 이동 (뒤로가기, 링크 등)
+  const blocker = useBlocker(
+    useCallback(({ currentLocation, nextLocation }) =>
+      isDirty && currentLocation.pathname !== nextLocation.pathname,
+    [isDirty]),
+  );
+
+  useEffect(() => {
+    if (blocker.state === 'blocked') {
+      const confirmed = window.confirm('수정한 내용이 저장되지 않았어요. 정말 나가시겠어요?');
+      if (confirmed) {
+        blocker.proceed();
+      } else {
+        blocker.reset();
+      }
+    }
+  }, [blocker]);
+
   const markDirty = () => { if (!isDirty) setIsDirty(true); };
+
+  // dirty 상태를 자동으로 마킹하는 래퍼 헬퍼
+  const withDirty = (setter) => (value) => { setter(value); markDirty(); };
+  const withDirtyEvent = (setter) => (e) => { setter(e?.target ? e.target.value : e); markDirty(); };
 
   const { mutate: save, isPending } = useMutation({
     mutationFn: (data) => propertyApi.update(id, data),
@@ -263,10 +262,18 @@ const PropertyEditPage = () => {
 
   const toggleSurrounding = (value) => {
     setSurroundings((prev) =>
-      prev.includes(value) ? prev.filter((s) => s !== value) : [...prev, value]
+      prev.includes(value) ? prev.filter((s) => s !== value) : [...prev, value],
     );
     markDirty();
   };
+
+  // 핸들러 별칭 (인라인 markDirty() 제거용)
+  const handleAddressDetail = withDirtyEvent(setAddressDetail);
+  const handlePriceType = withDirty(setPriceType);
+  const handleRating = withDirty(setRating);
+  const handleMoveIn = withDirty(setMoveInAvailable);
+  const handleRevisit = withDirty(setRevisitIntention);
+  const handleMemo = withDirtyEvent(setMemo);
 
   if (isLoading) {
     return (
@@ -304,7 +311,7 @@ const PropertyEditPage = () => {
       <div className="space-y-3 px-5 pt-4 pb-24">
         {/* ── 사진 ──────────────────────────────────────────────── */}
         <Section>
-          <EditImageSection propertyId={id} images={images} onImagesChange={setImages} />
+          <EditImageSection propertyId={id} images={images} onImagesChange={setImages} onDirty={markDirty} />
         </Section>
 
         {/* ── 위치 ──────────────────────────────────────────────── */}
@@ -312,7 +319,7 @@ const PropertyEditPage = () => {
           <SectionTitle>위치 정보</SectionTitle>
           <button
             type="button"
-            onClick={() => { openAddressSearch(setAddress); markDirty(); }}
+            onClick={() => openAddressSearch((addr) => { setAddress(addr); markDirty(); })}
             className={cn(
               'flex w-full items-center gap-2 rounded-xl border px-4 py-3 text-left transition-all',
               address
@@ -329,7 +336,7 @@ const PropertyEditPage = () => {
               type="text"
               placeholder="동/호수 (예: 101호)"
               value={addressDetail}
-              onChange={(e) => { setAddressDetail(e.target.value); markDirty(); }}
+              onChange={handleAddressDetail}
               className="h-11 w-full rounded-xl border border-slate-200 px-4 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400"
             />
           )}
@@ -341,7 +348,7 @@ const PropertyEditPage = () => {
 
           <div>
             <p className="mb-2 text-sm font-medium text-slate-700">유형</p>
-            <Tabs.Root value={priceType} onValueChange={(v) => { setPriceType(v); markDirty(); }}>
+            <Tabs.Root value={priceType} onValueChange={handlePriceType}>
               <Tabs.List className="flex rounded-xl bg-slate-100 p-1">
                 {PRICE_TYPES.map(({ value, label }) => (
                   <Tabs.Trigger
@@ -363,42 +370,15 @@ const PropertyEditPage = () => {
             <p className="mb-2 text-sm font-medium text-slate-700">가격 (만원)</p>
             {priceType === 'MONTHLY' && (
               <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <p className="mb-1 text-xs text-slate-400">보증금</p>
-                  <input type="text" inputMode="numeric" placeholder="1000"
-                    value={deposit} onChange={numInput(setDeposit)}
-                    className="h-11 w-full rounded-xl border border-slate-200 px-4 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400" />
-                  {deposit && Number(deposit) >= 1000 && (
-                    <p className="mt-1 text-xs text-primary">{formatPrice(Number(deposit))}</p>
-                  )}
-                </div>
-                <div>
-                  <p className="mb-1 text-xs text-slate-400">월세</p>
-                  <input type="text" inputMode="numeric" placeholder="50"
-                    value={monthlyRent} onChange={numInput(setMonthlyRent)}
-                    className="h-11 w-full rounded-xl border border-slate-200 px-4 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400" />
-                </div>
+                <PriceInputWithHint label="보증금" value={deposit} onChange={numInput(setDeposit)} placeholder="1000" />
+                <PriceInputWithHint label="월세" value={monthlyRent} onChange={numInput(setMonthlyRent)} placeholder="50" />
               </div>
             )}
             {priceType === 'JEONSE' && (
-              <>
-                <input type="text" inputMode="numeric" placeholder="30000"
-                  value={deposit} onChange={numInput(setDeposit)}
-                  className="h-11 w-full rounded-xl border border-slate-200 px-4 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400" />
-                {deposit && Number(deposit) >= 1000 && (
-                  <p className="mt-1 text-xs text-primary">{formatPrice(Number(deposit))}</p>
-                )}
-              </>
+              <PriceInputWithHint label="전세금" value={deposit} onChange={numInput(setDeposit)} placeholder="30000" />
             )}
             {priceType === 'SALE' && (
-              <>
-                <input type="text" inputMode="numeric" placeholder="80000"
-                  value={price} onChange={numInput(setPrice)}
-                  className="h-11 w-full rounded-xl border border-slate-200 px-4 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400" />
-                {price && Number(price) >= 1000 && (
-                  <p className="mt-1 text-xs text-primary">{formatPrice(Number(price))}</p>
-                )}
-              </>
+              <PriceInputWithHint label="매매가" value={price} onChange={numInput(setPrice)} placeholder="80000" />
             )}
           </div>
         </Section>
@@ -430,7 +410,7 @@ const PropertyEditPage = () => {
           <div>
             <p className="mb-2 text-sm font-medium text-slate-700">전체 만족도</p>
             <div className="flex items-center gap-3">
-              <RatingStars rating={rating} onChange={(v) => { setRating(v); markDirty(); }} size="lg" />
+              <RatingStars rating={rating} onChange={handleRating} size="lg" />
               {rating > 0 && (
                 <span className="text-sm text-slate-500">
                   {['', '별로에요', '아쉬워요', '보통이에요', '좋아요', '최고에요'][rating]}
@@ -446,7 +426,7 @@ const PropertyEditPage = () => {
                 <ChipButton
                   key={value}
                   active={priceEvaluation === value}
-                  onClick={() => { setPriceEvaluation((prev) => (prev === value ? '' : value)); markDirty(); }}
+                  onClick={() => { setPriceEvaluation((prev) => prev === value ? '' : value); markDirty(); }}
                   className="flex-1"
                 >
                   {label}
@@ -502,14 +482,14 @@ const PropertyEditPage = () => {
           <div className="space-y-3">
             <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3">
               <p className="text-sm font-medium text-slate-800">즉시 입주 가능</p>
-              <Switch.Root checked={moveInAvailable} onCheckedChange={(v) => { setMoveInAvailable(v); markDirty(); }}
+              <Switch.Root checked={moveInAvailable} onCheckedChange={handleMoveIn}
                 className={cn('relative h-6 w-11 rounded-full transition-colors', moveInAvailable ? 'bg-primary' : 'bg-slate-200')}>
                 <Switch.Thumb className="block h-5 w-5 translate-x-0.5 rounded-full bg-white shadow transition-transform data-[state=checked]:translate-x-[22px]" />
               </Switch.Root>
             </div>
             <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3">
               <p className="text-sm font-medium text-slate-800">재방문 의향 있음</p>
-              <Switch.Root checked={revisitIntention} onCheckedChange={(v) => { setRevisitIntention(v); markDirty(); }}
+              <Switch.Root checked={revisitIntention} onCheckedChange={handleRevisit}
                 className={cn('relative h-6 w-11 rounded-full transition-colors', revisitIntention ? 'bg-primary' : 'bg-slate-200')}>
                 <Switch.Thumb className="block h-5 w-5 translate-x-0.5 rounded-full bg-white shadow transition-transform data-[state=checked]:translate-x-[22px]" />
               </Switch.Root>
@@ -525,7 +505,7 @@ const PropertyEditPage = () => {
               placeholder="임장 중 느낀 점을 자유롭게 기록하세요..."
               value={memo}
               maxLength={500}
-              onChange={(e) => { setMemo(e.target.value); markDirty(); }}
+              onChange={handleMemo}
               rows={4}
               className="w-full resize-none rounded-xl border border-slate-200 px-4 py-3 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400"
             />
