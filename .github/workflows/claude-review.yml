@@ -1,0 +1,56 @@
+name: Claude 코드 리뷰
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: 저장소 체크아웃
+        uses: actions/checkout@v4
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          prompt: |
+            당신은 React + TypeScript 프론트엔드 전문 코드 리뷰어입니다.
+            이 PR의 변경 사항을 한국어로 리뷰해주세요.
+
+            ## 리뷰 관점 (우선순위 순)
+
+            ### 🔴 반드시 확인 (버그 / 보안)
+            - 런타임 오류 가능성 (null/undefined 참조, 타입 불일치)
+            - XSS, 민감 정보 노출 (API 키, 토큰을 코드에 직접 하드코딩)
+            - 무한 루프 / 무한 리렌더링 위험
+
+            ### 🟡 권장 개선사항
+            - React 훅 규칙 위반 (조건문 내 훅 사용 등)
+            - TanStack Query / Zustand 잘못된 사용 패턴
+            - 불필요한 useEffect, 최적화 누락 (useMemo, useCallback)
+            - Tailwind CSS 클래스 중복 또는 인라인 스타일과 혼용
+
+            ### 🟢 참고 사항 (선택적 개선)
+            - 컴포넌트 재사용성 향상 제안
+            - 접근성(a11y) 개선 포인트
+            - 코드 가독성 (변수명, 함수명 개선 제안)
+
+            ## 출력 형식
+            - PR 요약을 먼저 1~2줄로 작성
+            - 문제가 없으면 "✅ 코드 품질 양호 — 특이 사항 없음" 한 줄로 마무리
+            - 문제가 있으면 심각도별(🔴/🟡/🟢)로 구분하여 인라인 댓글로 작성
+            - 모든 응답은 한국어로 작성
+          claude_args: "--max-turns 5"
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
