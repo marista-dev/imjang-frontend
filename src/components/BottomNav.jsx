@@ -32,7 +32,7 @@ const BottomNav = () => {
   return (
     <nav
       className={cn(
-        'fixed bottom-4 left-0 right-0 z-50 flex items-center justify-center gap-3 pb-safe',
+        'fixed bottom-4 left-0 right-0 z-50 flex items-center justify-center gap-2 pb-safe',
         'transition-all duration-300 ease-out',
         isHidden ? 'translate-y-[calc(100%+32px)] opacity-0' : 'translate-y-0 opacity-100',
       )}
@@ -66,7 +66,7 @@ const BottomNav = () => {
         type="button"
         onClick={() => navigate('/properties/new')}
         aria-label="매물 기록 추가"
-        className="flex h-[50px] w-[50px] flex-shrink-0 items-center justify-center rounded-full bg-primary shadow-lg shadow-primary/30 active:scale-95 transition-transform"
+        className="flex h-[56px] w-[56px] flex-shrink-0 items-center justify-center rounded-full bg-primary shadow-lg shadow-primary/30 active:scale-95 transition-transform"
       >
         <Plus size={22} strokeWidth={2.2} className="text-white" />
       </button>
