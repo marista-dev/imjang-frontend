@@ -118,7 +118,7 @@ const PropertyEditPage = () => {
   const queryClient = useQueryClient();
 
   const { data: property, isLoading } = useQuery({
-    queryKey: ['property-detail', id],
+    queryKey: ['property-edit', id],
     queryFn: () => propertyApi.getDetail(id).then((r) => r.data),
     staleTime: 5 * 60 * 1000,
   });
