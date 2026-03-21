@@ -1,7 +1,6 @@
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from './store/useAuthStore';
 import BottomNav from './components/BottomNav';
-import { FloatingActionButton } from './components/FloatingActionButton';
 
 // Pages
 import LoginPage from './pages/LoginPage';
@@ -123,7 +122,6 @@ const App = () => {
 
       {/* 하단 네비게이션 + FAB */}
       <BottomNav />
-      <FloatingActionButton />
     </div>
   );
 };

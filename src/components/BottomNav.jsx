@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Map, Clock } from 'lucide-react';
+import { Home, Map, Clock, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useScrollDirection } from '@/hooks/useScrollDirection';
 
@@ -32,11 +32,12 @@ const BottomNav = () => {
   return (
     <nav
       className={cn(
-        'fixed bottom-4 left-0 right-0 z-50 flex justify-center pb-safe',
+        'fixed bottom-4 left-0 right-0 z-50 flex items-center justify-center gap-3 pb-safe',
         'transition-all duration-300 ease-out',
         isHidden ? 'translate-y-[calc(100%+32px)] opacity-0' : 'translate-y-0 opacity-100',
       )}
     >
+      {/* 탭 pill */}
       <div
         className="inline-flex items-center rounded-full p-[5px]"
         style={{
@@ -51,9 +52,7 @@ const BottomNav = () => {
             onClick={() => navigate(path)}
             className={cn(
               'flex w-[82px] flex-col items-center gap-0.5 rounded-full py-[9px] transition-all duration-200',
-              isActive(path)
-                ? 'bg-primary text-white'
-                : 'text-slate-400',
+              isActive(path) ? 'bg-primary text-white' : 'text-slate-400',
             )}
           >
             <Icon size={17} strokeWidth={1.8} />
@@ -61,6 +60,16 @@ const BottomNav = () => {
           </button>
         ))}
       </div>
+
+      {/* FAB — pill 우측 */}
+      <button
+        type="button"
+        onClick={() => navigate('/properties/new')}
+        aria-label="매물 기록 추가"
+        className="flex h-[50px] w-[50px] flex-shrink-0 items-center justify-center rounded-full bg-primary shadow-lg shadow-primary/30 active:scale-95 transition-transform"
+      >
+        <Plus size={22} strokeWidth={2.2} className="text-white" />
+      </button>
     </nav>
   );
 };
