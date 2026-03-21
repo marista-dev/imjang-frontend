@@ -657,7 +657,10 @@ const PropertyNewPage = () => {
                 step={1}
                 value={form.maintenanceFee}
                 onChange={(e) => set('maintenanceFee', Number(e.target.value))}
-                className="h-2 w-full cursor-pointer accent-primary"
+                className="h-2 w-full cursor-pointer"
+                style={{
+                  background: `linear-gradient(to right, #059669 ${form.maintenanceFee * 2}%, #E2E8F0 ${form.maintenanceFee * 2}%)`,
+                }}
               />
               <div className="mt-1 flex justify-between text-xs text-slate-400">
                 <span>0만원</span>
