@@ -350,21 +350,13 @@ const PropertyNewPage = () => {
   // 슬롯별 이미지 찾기
   const slotImage = (idx) => form.images[idx] ?? null;
 
-  // 제출
-  const [redirectToEdit, setRedirectToEdit] = useState(false);
-
   const { mutate: submitSave, isPending: isSaving } = useMutation({
-    mutationFn: (data) => propertyApi.create(data).then((r) => r.data),
-    onSuccess: (data) => {
+    mutationFn: (data) => propertyApi.create(data),
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['properties-recent'] });
       queryClient.invalidateQueries({ queryKey: ['properties-timeline'] });
-      if (redirectToEdit && data?.id) {
-        toast.success('매물이 등록되었어요! 상세 정보를 추가해보세요.');
-        navigate(`/properties/${data.id}/edit`, { replace: true });
-      } else {
-        toast.success('매물이 등록되었어요!');
-        navigate('/timeline', { replace: true });
-      }
+      toast.success('매물이 등록되었어요!');
+      navigate('/timeline', { replace: true });
     },
     onError: () => toast.error('등록에 실패했어요.'),
   });
@@ -410,16 +402,6 @@ const PropertyNewPage = () => {
       scrollToFirstMissing();
       return;
     }
-    setRedirectToEdit(false);
-    submitSave(buildPayload());
-  };
-
-  const handleSaveAndEdit = () => {
-    if (!allRequiredDone) {
-      toast.error('필수 항목을 모두 입력해주세요.');
-      return;
-    }
-    setRedirectToEdit(true);
     submitSave(buildPayload());
   };
 
@@ -788,24 +770,14 @@ const PropertyNewPage = () => {
               필수 항목 {5 - requiredDone}개를 더 입력해주세요
             </p>
           )}
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={handleSaveAndEdit}
-              disabled={!allRequiredDone || isSaving}
-              className="flex h-12 flex-1 items-center justify-center rounded-xl bg-slate-100 text-sm font-semibold text-slate-700 transition-all active:scale-[0.98] disabled:opacity-50"
-            >
-              상세 기록 추가
-            </button>
-            <button
-              type="button"
-              onClick={handleSave}
-              disabled={!allRequiredDone || isSaving}
-              className="flex h-12 flex-1 items-center justify-center rounded-xl bg-primary text-sm font-semibold text-white transition-all active:scale-[0.98] disabled:opacity-50"
-            >
-              {isSaving ? <Spinner size="sm" className="text-white" /> : '저장하기'}
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={!allRequiredDone || isSaving}
+            className="btn-primary disabled:opacity-50"
+          >
+            {isSaving ? <Spinner size="sm" className="text-white" /> : '저장하기'}
+          </button>
         </div>
       </div>
     </>

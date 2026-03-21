@@ -4,15 +4,9 @@ import { cn, getRelativeDate } from '@/lib/utils';
 import { PriceDisplay } from './PriceDisplay';
 import { RatingStars } from './RatingStars';
 
-const MARKER_COLORS = {
-  GREEN: 'bg-success',
-  YELLOW: 'bg-warning',
-  RED: 'bg-danger',
-};
-
 /**
- * 매물 목록용 카드 컴포넌트
- * @param {object} property - 매물 데이터
+ * 매물 목록용 세로형 카드 컴포넌트
+ * @param {object} property - normalizeProperty()로 정규화된 매물 데이터
  * @param {string} className - 추가 클래스
  */
 export const PropertyCard = ({ property, className }) => {
@@ -20,29 +14,41 @@ export const PropertyCard = ({ property, className }) => {
 
   const {
     address,
-    thumbnailUrl,
+    images,
     priceType,
     deposit,
     monthlyRent,
     salePrice,
     rating,
     visitedAt,
-    markerColor,
+    area,
+    floor,
+    totalFloors,
   } = property;
 
   const propertyId = property.id ?? property.propertyId;
+  const thumbnailUrl = images?.[0]?.url ?? null;
+  const imageCount = images?.length ?? 0;
+
+  const subInfo = [
+    area && `${area}m²`,
+    floor && totalFloors ? `${floor}/${totalFloors}층` : floor ? `${floor}층` : null,
+  ].filter(Boolean).join(' · ');
 
   return (
-    <button
-      type="button"
+    <div
+      role="button"
+      tabIndex={0}
       onClick={() => { if (propertyId) navigate(`/properties/${propertyId}`); }}
+      onKeyDown={(e) => { if (e.key === 'Enter' && propertyId) navigate(`/properties/${propertyId}`); }}
       className={cn(
-        'card flex w-full gap-3 text-left transition-shadow active:shadow-md',
+        'overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm',
+        'cursor-pointer transition-all active:scale-[0.98]',
         className,
       )}
     >
-      {/* 썸네일 */}
-      <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl bg-slate-100">
+      {/* 사진 영역 */}
+      <div className="relative h-40 bg-slate-100">
         {thumbnailUrl ? (
           <img
             src={thumbnailUrl}
@@ -51,39 +57,42 @@ export const PropertyCard = ({ property, className }) => {
             className="h-full w-full object-cover"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-slate-300">
-            <ImageOff size={32} />
+          <div className="flex h-full w-full items-center justify-center">
+            <ImageOff size={32} className="text-slate-300" />
           </div>
         )}
-        {markerColor && (
-          <div
-            className={cn(
-              'absolute right-1.5 top-1.5 h-3 w-3 rounded-full border-2 border-white',
-              MARKER_COLORS[markerColor],
-            )}
-          />
+        {imageCount > 1 && (
+          <span className="absolute right-2 top-2 rounded-full bg-black/40 px-2 py-0.5 text-[11px] text-white">
+            1/{imageCount}
+          </span>
         )}
       </div>
 
-      {/* 정보 */}
-      <div className="flex min-w-0 flex-1 flex-col justify-center gap-1">
-        <p className="truncate text-sm font-semibold text-slate-800">
-          {address}
-        </p>
-        <PriceDisplay
-          priceType={priceType}
-          deposit={deposit}
-          monthlyRent={monthlyRent}
-          salePrice={salePrice}
-          className="text-sm"
-        />
-        <div className="flex items-center gap-2">
-          <RatingStars rating={rating} size="sm" readOnly />
-          <span className="text-xs text-slate-400">
-            {getRelativeDate(visitedAt)}
-          </span>
+      {/* 텍스트 영역 */}
+      <div className="p-4">
+        <p className="truncate text-[15px] font-semibold text-slate-800">{address}</p>
+        <div className="mt-1.5 flex items-baseline gap-2">
+          <PriceDisplay
+            priceType={priceType}
+            deposit={deposit}
+            monthlyRent={monthlyRent}
+            salePrice={salePrice}
+            className="text-base font-bold text-primary"
+          />
+          {subInfo && (
+            <span className="text-xs text-slate-400">{subInfo}</span>
+          )}
+        </div>
+        <div className="mt-2 flex items-center justify-between">
+          <div className="flex items-center gap-1.5">
+            <RatingStars rating={rating} size="sm" readOnly />
+            {rating > 0 && (
+              <span className="text-sm font-medium text-slate-500">{rating}</span>
+            )}
+          </div>
+          <span className="text-[11px] text-slate-400">{getRelativeDate(visitedAt)}</span>
         </div>
       </div>
-    </button>
+    </div>
   );
 };
