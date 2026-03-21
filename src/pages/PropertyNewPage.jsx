@@ -416,8 +416,8 @@ const PropertyNewPage = () => {
 
       <div className="min-h-screen bg-slate-50">
         {/* 헤더 */}
-        <div className="sticky top-0 z-10 border-b border-slate-100 bg-white/95 px-5 py-4 backdrop-blur-sm">
-          <div className="flex items-center gap-3">
+        <div className="sticky top-0 z-10 border-b border-slate-100 bg-white/95 backdrop-blur-sm">
+          <div className="flex items-center gap-3 px-5 py-4">
             <button
               type="button"
               onClick={() => navigate(-1)}
@@ -425,23 +425,18 @@ const PropertyNewPage = () => {
             >
               <ChevronLeft size={24} />
             </button>
-            <div className="flex-1">
-              <h1 className="text-base font-bold text-slate-800">빠른 기록</h1>
-              <div className="mt-1 flex items-center gap-2">
-                <span className="text-xs text-slate-500">필수 항목</span>
-                <div className="flex gap-1">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <span
-                      key={i}
-                      className={cn(
-                        'h-1.5 w-1.5 rounded-full transition-colors',
-                        i < requiredDone ? 'bg-primary' : 'bg-slate-200',
-                      )}
-                    />
-                  ))}
-                </div>
-                <span className="text-xs font-medium text-primary">{requiredDone}/5</span>
-              </div>
+            <h1 className="flex-1 text-base font-bold text-slate-800">빠른 기록</h1>
+          </div>
+          <div className="px-5 pb-3">
+            <div className="mb-1.5 flex items-center justify-between">
+              <span className="text-sm font-semibold text-slate-700">필수 항목</span>
+              <span className="text-sm font-bold text-primary">{requiredDone}/5</span>
+            </div>
+            <div className="h-3 w-full overflow-hidden rounded-full bg-slate-200">
+              <div
+                className="h-full rounded-full bg-primary transition-all duration-300"
+                style={{ width: `${(requiredDone / 5) * 100}%` }}
+              />
             </div>
           </div>
         </div>
@@ -503,96 +498,7 @@ const PropertyNewPage = () => {
             </div>
           </Section>
 
-          {/* ── 섹션 2: 필수 체크리스트 ──────────────────────────── */}
-          <Section id="section-checklist">
-            <SectionTitle>필수 체크리스트</SectionTitle>
-
-            {/* 전체 만족도 */}
-            <div>
-              <p className="mb-2 text-sm font-medium text-slate-700">
-                전체 만족도<span className="ml-0.5 text-danger">*</span>
-              </p>
-              <div className="flex items-center gap-3">
-                <RatingStars
-                  rating={form.rating}
-                  onChange={(v) => set('rating', v)}
-                  size="lg"
-                />
-                {form.rating > 0 && (
-                  <span className="text-sm text-slate-500">
-                    {['', '별로에요', '아쉬워요', '보통이에요', '좋아요', '최고에요'][form.rating]}
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* 가격 평가 */}
-            <div>
-              <p className="mb-2 text-sm font-medium text-slate-700">
-                가격 평가<span className="ml-0.5 text-danger">*</span>
-              </p>
-              <div className="flex gap-2">
-                {PRICE_RATINGS.map(({ value, label }) => (
-                  <ChipButton
-                    key={value}
-                    active={form.priceEvaluation === value}
-                    onClick={() => set('priceEvaluation', form.priceEvaluation === value ? '' : value)}
-                    className="flex-1"
-                  >
-                    {label}
-                  </ChipButton>
-                ))}
-              </div>
-            </div>
-
-            {/* 즉시 입주 가능 */}
-            <div>
-              <p className="mb-2 text-sm font-medium text-slate-700">
-                즉시 입주 가능<span className="ml-0.5 text-danger">*</span>
-              </p>
-              <div className="flex gap-2">
-                <ChipButton
-                  active={form.moveInAvailable === true}
-                  onClick={() => set('moveInAvailable', form.moveInAvailable === true ? null : true)}
-                  className="flex-1"
-                >
-                  가능
-                </ChipButton>
-                <ChipButton
-                  active={form.moveInAvailable === false}
-                  onClick={() => set('moveInAvailable', form.moveInAvailable === false ? null : false)}
-                  className="flex-1"
-                >
-                  불가
-                </ChipButton>
-              </div>
-            </div>
-
-            {/* 재방문 의사 */}
-            <div>
-              <p className="mb-2 text-sm font-medium text-slate-700">
-                재방문 의사<span className="ml-0.5 text-danger">*</span>
-              </p>
-              <div className="flex gap-2">
-                <ChipButton
-                  active={form.revisitIntention === true}
-                  onClick={() => set('revisitIntention', form.revisitIntention === true ? null : true)}
-                  className="flex-1"
-                >
-                  있음
-                </ChipButton>
-                <ChipButton
-                  active={form.revisitIntention === false}
-                  onClick={() => set('revisitIntention', form.revisitIntention === false ? null : false)}
-                  className="flex-1"
-                >
-                  없음
-                </ChipButton>
-              </div>
-            </div>
-          </Section>
-
-          {/* ── 섹션 3: 매물 정보 ─────────────────────────────────── */}
+          {/* ── 섹션 2: 매물 정보 ─────────────────────────────────── */}
           <Section>
             <SectionTitle>매물 정보</SectionTitle>
 
@@ -696,6 +602,95 @@ const PropertyNewPage = () => {
                 <input type="text" inputMode="numeric" placeholder="전체층"
                   value={form.totalFloors} onChange={numInput('totalFloors')}
                   className="h-11 w-full rounded-xl border border-slate-200 px-4 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400" />
+              </div>
+            </div>
+          </Section>
+
+          {/* ── 섹션 3: 필수 체크리스트 ──────────────────────────── */}
+          <Section id="section-checklist">
+            <SectionTitle>필수 체크리스트</SectionTitle>
+
+            {/* 전체 만족도 */}
+            <div>
+              <p className="mb-2 text-sm font-medium text-slate-700">
+                전체 만족도<span className="ml-0.5 text-danger">*</span>
+              </p>
+              <div className="flex items-center gap-3">
+                <RatingStars
+                  rating={form.rating}
+                  onChange={(v) => set('rating', v)}
+                  size="lg"
+                />
+                {form.rating > 0 && (
+                  <span className="text-sm text-slate-500">
+                    {['', '별로에요', '아쉬워요', '보통이에요', '좋아요', '최고에요'][form.rating]}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* 가격 평가 */}
+            <div>
+              <p className="mb-2 text-sm font-medium text-slate-700">
+                가격 평가<span className="ml-0.5 text-danger">*</span>
+              </p>
+              <div className="flex gap-2">
+                {PRICE_RATINGS.map(({ value, label }) => (
+                  <ChipButton
+                    key={value}
+                    active={form.priceEvaluation === value}
+                    onClick={() => set('priceEvaluation', form.priceEvaluation === value ? '' : value)}
+                    className="flex-1"
+                  >
+                    {label}
+                  </ChipButton>
+                ))}
+              </div>
+            </div>
+
+            {/* 즉시 입주 가능 */}
+            <div>
+              <p className="mb-2 text-sm font-medium text-slate-700">
+                즉시 입주 가능<span className="ml-0.5 text-danger">*</span>
+              </p>
+              <div className="flex gap-2">
+                <ChipButton
+                  active={form.moveInAvailable === true}
+                  onClick={() => set('moveInAvailable', form.moveInAvailable === true ? null : true)}
+                  className="flex-1"
+                >
+                  가능
+                </ChipButton>
+                <ChipButton
+                  active={form.moveInAvailable === false}
+                  onClick={() => set('moveInAvailable', form.moveInAvailable === false ? null : false)}
+                  className="flex-1"
+                >
+                  불가
+                </ChipButton>
+              </div>
+            </div>
+
+            {/* 재방문 의사 */}
+            <div>
+              <p className="mb-2 text-sm font-medium text-slate-700">
+                재방문 의사<span className="ml-0.5 text-danger">*</span>
+              </p>
+              <div className="flex gap-2">
+                <ChipButton
+                  active={form.revisitIntention === true}
+                  onClick={() => set('revisitIntention', form.revisitIntention === true ? null : true)}
+                  className="flex-1"
+                >
+                  있음
+                </ChipButton>
+                <ChipButton
+                  active={form.revisitIntention === false}
+                  onClick={() => set('revisitIntention', form.revisitIntention === false ? null : false)}
+                  className="flex-1"
+                >
+                  없음
+                </ChipButton>
               </div>
             </div>
           </Section>

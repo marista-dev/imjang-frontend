@@ -47,6 +47,12 @@ const SURROUNDINGS = [
   { value: 'GYM', label: '헬스장' },
 ];
 
+const PARKING_OPTIONS = [
+  { value: 'AVAILABLE', label: '가능' },
+  { value: 'NOT_AVAILABLE', label: '불가' },
+  { value: 'CONDITIONAL', label: '조건부' },
+];
+
 const openAddressSearch = (onSelect) => {
   if (!window.daum?.Postcode) {
     toast.error('주소 검색 서비스를 불러오는 중이에요.');
@@ -99,13 +105,11 @@ const EditImageSection = ({ propertyId, images, onImagesChange, onDirty }) => {
         {images.map((img) => (
           <div key={img.id} className="relative aspect-square overflow-hidden rounded-xl bg-slate-100">
             <img src={img.url} alt="" loading="lazy" className="h-full w-full object-cover" />
-            <button
-              type="button"
-              onClick={() => handleDelete(img.id)}
-              className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/50 text-white"
-            >
+            {/* 삭제 버튼 임시 비활성화 — 백엔드 이미지 ID 반환 후 복원 */}
+            {/* <button type="button" onClick={() => handleDelete(img.id)}
+              className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/50 text-white">
               <X size={14} />
-            </button>
+            </button> */}
           </div>
         ))}
         {images.length < 10 && (
@@ -149,6 +153,8 @@ const PropertyEditPage = () => {
   const [totalFloors, setTotalFloors] = useState('');
   const [rating, setRating] = useState(0);
   const [priceEvaluation, setPriceEvaluation] = useState('');
+  const [parkingType, setParkingType] = useState('');
+  const [maintenanceFee, setMaintenanceFee] = useState(0);
   const [checkItems, setCheckItems] = useState({});
   const [surroundings, setSurroundings] = useState([]);
   const [moveInAvailable, setMoveInAvailable] = useState(false);
@@ -171,11 +177,13 @@ const PropertyEditPage = () => {
     setCurrentFloor(property.currentFloor != null ? String(property.currentFloor) : '');
     setTotalFloors(property.totalFloors != null ? String(property.totalFloors) : '');
     setRating(property.rating ?? 0);
-    setPriceEvaluation(property.priceEvaluation ?? '');
+    setPriceEvaluation(property.evaluation?.priceEvaluation ?? property.priceEvaluation ?? '');
+    setParkingType(property.parkingType ?? '');
+    setMaintenanceFee(property.maintenanceFee ?? 0);
     setCheckItems(property.checkItems ?? {});
-    setSurroundings(property.surroundings ?? []);
-    setMoveInAvailable(property.moveInAvailable ?? false);
-    setRevisitIntention(property.revisitIntention ?? false);
+    setSurroundings(property.environments ?? property.surroundings ?? []);
+    setMoveInAvailable(property.evaluation?.moveInAvailable ?? property.moveInAvailable ?? false);
+    setRevisitIntention(property.evaluation?.revisitIntention ?? property.revisitIntention ?? false);
     setMemo(property.memo ?? '');
   }, [property]);
 
@@ -218,26 +226,13 @@ const PropertyEditPage = () => {
   });
 
   const handleSave = () => {
-    if (!address) {
-      toast.error('주소를 입력해주세요.');
-      return;
-    }
     save({
-      address,
-      addressDetail: addressDetail || null,
-      priceType,
-      deposit: deposit ? Number(deposit) : null,
-      monthlyRent: monthlyRent ? Number(monthlyRent) : null,
-      price: price ? Number(price) : null,
-      area: area ? Number(area) : null,
-      currentFloor: currentFloor ? Number(currentFloor) : null,
-      totalFloors: totalFloors ? Number(totalFloors) : null,
-      rating: rating || null,
-      priceEvaluation: priceEvaluation || null,
-      checkItems,
-      surroundings,
       moveInAvailable,
       revisitIntention,
+      priceEvaluation: priceEvaluation === 'FAIR' ? 'REASONABLE' : priceEvaluation,
+      parkingType: parkingType || 'UNKNOWN',
+      maintenanceFee: maintenanceFee ? Number(maintenanceFee) : null,
+      environments: surroundings,
       memo: memo || null,
     });
   };
@@ -316,33 +311,13 @@ const PropertyEditPage = () => {
           <EditImageSection propertyId={id} images={images} onImagesChange={setImages} onDirty={markDirty} />
         </Section>
 
-        {/* ── 위치 ──────────────────────────────────────────────── */}
-        <Section>
-          <SectionTitle>위치 정보</SectionTitle>
-          <button
-            type="button"
-            onClick={() => openAddressSearch((addr) => { setAddress(addr); markDirty(); })}
-            className={cn(
-              'flex w-full items-center gap-2 rounded-xl border px-4 py-3 text-left transition-all',
-              address
-                ? 'border-primary bg-primary-50 text-slate-800'
-                : 'border-slate-200 bg-slate-50 text-slate-400',
-            )}
-          >
-            <MapPin size={16} className={address ? 'text-primary' : 'text-slate-400'} />
-            <span className="flex-1 truncate text-sm">{address || '주소를 검색해주세요'}</span>
-            {address && <Check size={16} className="text-primary" />}
-          </button>
-          {address && (
-            <input
-              type="text"
-              placeholder="동/호수 (예: 101호)"
-              value={addressDetail}
-              onChange={handleAddressDetail}
-              className="h-11 w-full rounded-xl border border-slate-200 px-4 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400"
-            />
-          )}
-        </Section>
+        {/* ── 위치 (읽기 전용) ──────────────────────────────────── */}
+        {address && (
+          <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3">
+            <MapPin size={16} className="flex-shrink-0 text-slate-400" />
+            <span className="flex-1 truncate text-sm text-slate-700">{address}</span>
+          </div>
+        )}
 
         {/* ── 가격 정보 ─────────────────────────────────────────── */}
         <Section>
@@ -478,6 +453,47 @@ const PropertyEditPage = () => {
                   {label}
                 </button>
               ))}
+            </div>
+          </div>
+
+          <div>
+            <p className="mb-2 text-sm font-medium text-slate-700">주차</p>
+            <div className="flex gap-2">
+              {PARKING_OPTIONS.map(({ value, label }) => (
+                <ChipButton
+                  key={value}
+                  active={parkingType === value}
+                  onClick={() => { setParkingType((prev) => prev === value ? '' : value); markDirty(); }}
+                  className="flex-1"
+                >
+                  {label}
+                </ChipButton>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <div className="mb-2 flex items-center justify-between">
+              <p className="text-sm font-medium text-slate-700">관리비</p>
+              <span className="text-sm font-semibold text-primary">
+                {maintenanceFee === 0 ? '없음' : `${maintenanceFee}만원`}
+              </span>
+            </div>
+            <input
+              type="range"
+              min={0}
+              max={50}
+              step={1}
+              value={maintenanceFee}
+              onChange={(e) => { setMaintenanceFee(Number(e.target.value)); markDirty(); }}
+              className="h-2 w-full cursor-pointer"
+              style={{
+                background: `linear-gradient(to right, #059669 ${maintenanceFee * 2}%, #E2E8F0 ${maintenanceFee * 2}%)`,
+              }}
+            />
+            <div className="mt-1 flex justify-between text-xs text-slate-400">
+              <span>0만원</span>
+              <span>50만원</span>
             </div>
           </div>
 

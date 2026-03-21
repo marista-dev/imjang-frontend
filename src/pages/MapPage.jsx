@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, SlidersHorizontal, MapPin, ImageOff, X } from 'lucide-react';
 import { Drawer } from 'vaul';
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { toast } from 'sonner';
 import { mapApi } from '@/api/map';
 import { PriceDisplay } from '@/components/PriceDisplay';
@@ -360,6 +361,7 @@ const MapPage = () => {
         <Drawer.Portal>
           <Drawer.Overlay className="fixed inset-0 z-[90] bg-black/20" />
           <Drawer.Content className="fixed bottom-0 left-0 right-0 z-[91] mx-auto w-full max-w-app rounded-t-2xl bg-white px-5 pb-safe pt-4 shadow-xl">
+            <VisuallyHidden><Drawer.Title>매물 요약</Drawer.Title></VisuallyHidden>
             <Drawer.Handle className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-slate-300" />
 
             {selectedProperty && (
@@ -417,6 +419,7 @@ const MapPage = () => {
         <Drawer.Portal>
           <Drawer.Overlay className="fixed inset-0 z-[90] bg-black/40" />
           <Drawer.Content className="fixed bottom-0 left-0 right-0 z-[91] mx-auto w-full max-w-app rounded-t-2xl bg-white px-5 pb-safe pt-4">
+            <VisuallyHidden><Drawer.Title>필터</Drawer.Title></VisuallyHidden>
             <Drawer.Handle className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-slate-300" />
 
             <div className="mb-5 flex items-center justify-between">
