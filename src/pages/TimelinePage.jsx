@@ -10,8 +10,8 @@ import { normalizeProperty, cn } from '@/lib/utils';
 
 const FILTERS = [
   { id: 'ALL', label: '전체' },
+  { id: 'MONTHLY', label: '월세' },
   { id: 'JEONSE', label: '전세' },
-  { id: 'MONTHLY_RENT', label: '월세' },
   { id: 'SALE', label: '매매' },
   { id: 'RATING_4', label: '⭐ 4+' },
 ];
