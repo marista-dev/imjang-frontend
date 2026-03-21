@@ -76,7 +76,14 @@ maintenanceFee     ❌ 보내지 않음 (백엔드는 필요)
 - UI 자체는 정상 (useBlocker 해결, 폼 로드 정상)
 - 수정 페이지에서 위치정보 수정 섹션은 제거 (수정할 필요 없음)
 
-## C-005: 수정 페이지 사진 삭제 400 에러
+## C-005: 지도 페이지 마커 없음
+- **상태**: 데이터 문제 (백엔드)
+- **증상**: 지도 API 200 성공이지만 markers가 빈 배열 `{"markers":[]}`
+- **원인**: 매물에 위도/경도가 저장되지 않음
+- **프론트**: 지도 로드/검색/필터 기능 정상. API 파라미터 정상 (southWestLat 등)
+- **근본 원인**: 매물 생성 시 latitude/longitude가 백엔드에 저장되는지 확인 필요 (B-003 참조)
+
+## C-006: 수정 페이지 사진 삭제 400 에러
 - **상태**: 삭제 실패 (400 Bad Request)
 - **원인**: 백엔드 detail API가 이미지를 **문자열 배열**로만 반환: `["/temp-images/..."]`
   프론트엔드 `normalizeProperty()`가 이걸 `[{id: 0, url: "..."}]`로 변환 (배열 인덱스를 id로 사용)
@@ -227,3 +234,127 @@ public record PropertyImageDto(
 **방안 B: 프론트에서 삭제 기능 비활성화 (임시)**
 - 수정 페이지에서 이미지 삭제 버튼을 숨김
 - 백엔드 API 수정 후 복원
+
+---
+
+## B-003: 지도 마커 API 백엔드 구현 PRD
+
+지도 기능이 동작하려면 2개 API와 매물 좌표 저장이 필요.
+
+---
+
+### API 1: 지도 마커 조회
+
+**엔드포인트**: `GET /api/v1/properties/map/markers`
+
+**요청 파라미터** (Query String, 모두 필수):
+| 파라미터 | 타입 | 설명 | 예시 |
+|---|---|---|---|
+| `southWestLat` | Double | 뷰포트 남서쪽 위도 | 37.546 |
+| `southWestLng` | Double | 뷰포트 남서쪽 경도 | 127.059 |
+| `northEastLat` | Double | 뷰포트 북동쪽 위도 | 37.576 |
+| `northEastLng` | Double | 뷰포트 북동쪽 경도 | 127.076 |
+| `zoomLevel` | Integer | 카카오맵 줌 레벨 (1~14) | 5 |
+
+**응답 본문** (200 OK):
+```json
+{
+  "markers": [
+    {
+      "id": 17,
+      "latitude": 37.5612,
+      "longitude": 127.0345,
+      "address": "서울 성동구 가람길 287",
+      "priceType": "JEONSE",
+      "deposit": 11111,
+      "monthlyRent": null,
+      "price": null,
+      "rating": 5,
+      "thumbnailUrl": "/temp-images/user2/2026/03/thumb_xxx.png"
+    }
+  ]
+}
+```
+
+**응답 필드 설명:**
+| 필드 | 타입 | 필수 | 설명 |
+|---|---|---|---|
+| `id` | Long | ✅ | 매물 ID (마커 클릭 시 상세보기 네비게이션에 사용) |
+| `latitude` | Double | ✅ | 위도 (마커 위치) |
+| `longitude` | Double | ✅ | 경도 (마커 위치) |
+| `address` | String | ✅ | 주소 (마커 라벨에서 동/리 추출해서 표시) |
+| `priceType` | String | ✅ | 거래유형: `JEONSE`, `MONTHLY_RENT`, `SALE` (필터링에 사용) |
+| `deposit` | Long | ❌ | 보증금/전세금 (요약 카드에 표시) |
+| `monthlyRent` | Long | ❌ | 월세 (요약 카드에 표시) |
+| `price` | Long | ❌ | 매매가 (요약 카드에 표시) |
+| `rating` | Integer | ❌ | 별점 1~5 (마커 색상 결정: 4+ 초록, 3 노랑, 1~2 빨강) |
+| `thumbnailUrl` | String | ❌ | 섬네일 URL (요약 카드에 표시) |
+
+**비즈니스 로직:**
+- 현재 로그인된 사용자의 매물만 반환
+- `latitude`/`longitude`가 뷰포트 범위 내인 매물만 필터링
+  - `latitude BETWEEN southWestLat AND northEastLat`
+  - `longitude BETWEEN southWestLng AND northEastLng`
+- `zoomLevel`은 향후 클러스터링에 사용 가능 (우선은 무시 가능)
+- 좌표가 null인 매물은 제외
+
+---
+
+### API 2: 매물 요약 카드 (마커 클릭 시)
+
+**엔드포인트**: `GET /api/v1/properties/{propertyId}/summary`
+
+**요청**: Path Variable `propertyId` (Long)
+
+**응답 본문** (200 OK):
+```json
+{
+  "id": 17,
+  "address": "서울 성동구 가람길 287",
+  "priceType": "JEONSE",
+  "deposit": 11111,
+  "monthlyRent": null,
+  "price": null,
+  "rating": 5,
+  "thumbnailUrl": "/temp-images/user2/2026/03/thumb_xxx.png"
+}
+```
+
+**참고**: 현재 프론트에서는 markers 응답에 충분한 정보가 있으면 summary API 없이 마커 데이터를 그대로 요약 카드에 사용.
+markers 응답이 위 필드를 모두 포함하면 summary API는 구현 안 해도 됨.
+
+---
+
+### 선행 조건: 매물 생성 시 좌표 저장
+
+**확인 필요 사항:**
+1. `CreatePropertyRequest` DTO에 `latitude` (Double), `longitude` (Double) 필드가 있는지
+2. Property 엔티티에 latitude/longitude 컴럼이 있는지
+3. PropertyService.createProperty()에서 좌표를 실제 DB에 저장하는지
+
+**프론트엔드 현황:**
+- 매물 등록 시 다음 사용자 행위를 통해 `latitude`/`longitude`를 획득:
+  1. 다음 주소 검색 → geocoder로 좌표 변환
+  2. 현재 위치 사용 → `navigator.geolocation`으로 좌표 획득
+  3. 지도에서 핀 선택 → 카카오맵 중앙 좌표 획득
+- 이 좌표를 `POST /api/v1/properties` payload에 포함해서 전송
+
+**구현되지 않으면 지도 기능 전체가 무용지물.**
+
+---
+
+### 전체 데이터 플로우
+
+```
+[매물 등록] → POST /properties (latitude/longitude 포함)
+    ↓
+[DB에 좌표 저장]
+    ↓
+[지도 페이지 오픈] → GET /properties/map/markers (viewport bounds)
+    ↓
+[마커 표시] → rating으로 색상 결정 (4+초록, 3노랑, 1~2빨강)
+    ↓
+[마커 클릭] → markers 응답 데이터로 요약 카드 Drawer 표시
+    ↓
+[상세보기 클릭] → navigate(`/properties/${id}`)
+```
