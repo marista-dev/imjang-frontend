@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { Plus, ChevronRight, Home, BookOpen, LogOut } from 'lucide-react';
+import { Plus, ChevronRight, BookOpen, LogOut, CalendarDays, BarChart3, User } from 'lucide-react';
 import { toast } from 'sonner';
 import { Drawer } from 'vaul';
 import { propertyApi } from '@/api/property';
@@ -42,46 +42,54 @@ const HomePage = () => {
     <div className="min-h-screen bg-slate-50 px-5 pt-6 pb-24 animate-fade-in-up">
       {/* 환영 헤더 */}
       <div className="mb-6">
-        <div className="flex items-center justify-between mb-1">
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary">
-              <Home size={16} className="text-white" />
-            </div>
-            <span className="text-base font-bold text-slate-800">임장노트</span>
-          </div>
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-xs font-medium tracking-wide text-slate-400">임장노트</span>
           <button
             type="button"
             onClick={() => setMenuOpen(true)}
-            className="flex h-11 w-11 items-center justify-center rounded-xl text-slate-400 active:bg-slate-100"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-emerald-200 to-emerald-500 active:scale-95 transition-all"
           >
-            <LogOut size={20} />
+            {user?.name ? (
+              <span className="text-sm font-bold text-white">{user.name[0]}</span>
+            ) : (
+              <User size={18} className="text-white" />
+            )}
           </button>
         </div>
         <h1 className="text-xl font-bold text-slate-800">
-          안녕하세요{user?.name ? `, ${user.name}님` : ''}!
+          좋은 매물 찾으셨나요? 👋
         </h1>
-        <p className="mt-0.5 text-sm text-slate-500">오늘도 좋은 매물을 찾아보세요.</p>
       </div>
 
       {/* 통계 카드 */}
       <div className="mb-6 grid grid-cols-2 gap-3">
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-          <p className="text-xs text-slate-500 mb-1">이번 달 기록</p>
-          <p className="text-2xl font-bold text-primary">
-            {monthlyCount ?? '-'}
-            {monthlyCount !== null && (
-              <span className="text-sm font-medium text-slate-500 ml-1">개</span>
-            )}
-          </p>
+        <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-50">
+            <CalendarDays size={20} className="text-emerald-600" />
+          </div>
+          <div>
+            <p className="text-xs text-slate-500">이번 달</p>
+            <p className="text-2xl font-bold text-primary">
+              {monthlyCount ?? '-'}
+              {monthlyCount !== null && (
+                <span className="text-sm font-medium text-slate-500 ml-1">건</span>
+              )}
+            </p>
+          </div>
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-          <p className="text-xs text-slate-500 mb-1">전체 기록</p>
-          <p className="text-2xl font-bold text-slate-800">
-            {totalCount ?? '-'}
-            {totalCount !== null && (
-              <span className="text-sm font-medium text-slate-500 ml-1">개</span>
-            )}
-          </p>
+        <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-blue-50">
+            <BarChart3 size={20} className="text-blue-600" />
+          </div>
+          <div>
+            <p className="text-xs text-slate-500">전체 기록</p>
+            <p className="text-2xl font-bold text-slate-800">
+              {totalCount ?? '-'}
+              {totalCount !== null && (
+                <span className="text-sm font-medium text-slate-500 ml-1">건</span>
+              )}
+            </p>
+          </div>
         </div>
       </div>
 

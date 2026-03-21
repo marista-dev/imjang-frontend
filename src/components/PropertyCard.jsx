@@ -24,6 +24,7 @@ export const PropertyCard = ({ property, className }) => {
     area,
     floor,
     totalFloors,
+    canMoveIn,
   } = property;
 
   const propertyId = property.id ?? property.propertyId;
@@ -84,13 +85,15 @@ export const PropertyCard = ({ property, className }) => {
           )}
         </div>
         <div className="mt-2 flex items-center justify-between">
+          <RatingStars rating={rating} size="sm" readOnly />
           <div className="flex items-center gap-1.5">
-            <RatingStars rating={rating} size="sm" readOnly />
-            {rating > 0 && (
-              <span className="text-sm font-medium text-slate-500">{rating}</span>
+            {canMoveIn && (
+              <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-600">
+                입주가능
+              </span>
             )}
+            <span className="text-[11px] text-slate-400">{getRelativeDate(visitedAt)}</span>
           </div>
-          <span className="text-[11px] text-slate-400">{getRelativeDate(visitedAt)}</span>
         </div>
       </div>
     </div>
