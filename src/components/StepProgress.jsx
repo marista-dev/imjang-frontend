@@ -21,7 +21,7 @@ export const StepProgress = ({ currentStep, totalSteps, labels = [] }) => {
 
       {/* 스텝 표시 */}
       <div className="flex items-center justify-between">
-        <span className="text-sm font-medium text-primary">
+        <span className="text-base font-medium text-primary">
           {currentStep}/{totalSteps}
         </span>
         {labels[currentStep - 1] && (

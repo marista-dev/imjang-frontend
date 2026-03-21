@@ -163,7 +163,7 @@ const HeroGallery = ({ images, property }) => {
       <div className="absolute bottom-0 left-0 right-0 p-5">
         <div className="flex items-center gap-1.5 mb-1.5">
           <MapPin size={13} className="flex-shrink-0 text-white/60" />
-          <p className="text-sm text-white/75 truncate">{property.address}</p>
+          <p className="text-base text-white/75 truncate">{property.address}</p>
         </div>
         <p className="text-xl font-bold text-white leading-tight">
           {renderHeroPrice(property)}
@@ -330,7 +330,7 @@ const PropertyDetailPage = () => {
                 <div className="min-w-0">
                   {locationInfo.subway ? (
                     <>
-                      <p className="text-sm font-medium text-slate-800 truncate">
+                      <p className="text-base font-medium text-slate-800 truncate">
                         {locationInfo.subway.nearestStation}
                       </p>
                       <p className="text-xs text-slate-400 mt-0.5">
@@ -338,7 +338,7 @@ const PropertyDetailPage = () => {
                       </p>
                     </>
                   ) : (
-                    <p className="text-sm text-slate-400">지하철 정보 없음</p>
+                    <p className="text-base text-slate-400">지하철 정보 없음</p>
                   )}
                 </div>
               </div>
@@ -351,13 +351,13 @@ const PropertyDetailPage = () => {
                 <div className="min-w-0">
                   {locationInfo.bus ? (
                     <>
-                      <p className="text-sm font-medium text-slate-800 truncate">
+                      <p className="text-base font-medium text-slate-800 truncate">
                         {locationInfo.bus.nearestStop}
                       </p>
                       <p className="text-xs text-slate-400 mt-0.5">{locationInfo.bus.distance}m</p>
                     </>
                   ) : (
-                    <p className="text-sm text-slate-400">버스 정보 없음</p>
+                    <p className="text-base text-slate-400">버스 정보 없음</p>
                   )}
                 </div>
               </div>
@@ -379,7 +379,7 @@ const PropertyDetailPage = () => {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-semibold text-slate-800">{a.category}</span>
+                        <span className="text-base font-semibold text-slate-800">{a.category}</span>
                         <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-500">{a.count}개</span>
                       </div>
                       <p className="mt-0.5 truncate text-xs text-slate-500">{a.nearestName}</p>
@@ -403,7 +403,7 @@ const PropertyDetailPage = () => {
                   ? <Check size={14} className="text-emerald-600" />
                   : <XIcon size={14} className="text-red-500" />}
               </div>
-              <span className="text-sm text-slate-700">
+              <span className="text-base text-slate-700">
                 즉시 입주 {property.canMoveIn ? '가능' : '불가'}
               </span>
             </div>
@@ -416,7 +416,7 @@ const PropertyDetailPage = () => {
                   ? <Check size={14} className="text-emerald-600" />
                   : <XIcon size={14} className="text-red-500" />}
               </div>
-              <span className="text-sm text-slate-700">
+              <span className="text-base text-slate-700">
                 재방문 의사 {property.revisitWanted ? '있음' : '없음'}
               </span>
             </div>
@@ -427,7 +427,7 @@ const PropertyDetailPage = () => {
                 <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-slate-100">
                   <Tag size={14} className="text-slate-600" />
                 </div>
-                <span className="text-sm text-slate-700">
+                <span className="text-base text-slate-700">
                   가격 {PRICE_RATING_LABELS[property.priceRating]}
                 </span>
               </div>
@@ -444,7 +444,7 @@ const PropertyDetailPage = () => {
                     ? <XIcon size={14} className="text-red-500" />
                     : <Car size={14} className={property.parkingType === 'AVAILABLE' ? 'text-emerald-600' : 'text-slate-600'} />}
                 </div>
-                <span className="text-sm text-slate-700">
+                <span className="text-base text-slate-700">
                   주차 {PARKING_LABELS[property.parkingType]}
                 </span>
               </div>
@@ -456,7 +456,7 @@ const PropertyDetailPage = () => {
                 <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-slate-100">
                   <Wallet size={14} className="text-slate-600" />
                 </div>
-                <span className="text-sm text-slate-700">
+                <span className="text-base text-slate-700">
                   관리비 {property.maintenanceFee > 0 ? `${property.maintenanceFee}만원` : '없음'}
                 </span>
               </div>
@@ -492,7 +492,7 @@ const PropertyDetailPage = () => {
         {/* 메모 */}
         {property.memo && (
           <Section icon={FileText} title="메모" iconColor="text-slate-500">
-            <div className="rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
+            <div className="rounded-xl bg-slate-50 px-4 py-3 text-base text-slate-700 leading-relaxed whitespace-pre-wrap">
               {property.memo}
             </div>
           </Section>

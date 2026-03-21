@@ -40,7 +40,7 @@ API 기본 경로: `http://localhost:8080/api/v1`
 5. iOS 줌 방지: 모든 input의 `font-size: 16px` 이상.
 6. 스크롤: `-webkit-overflow-scrolling: touch`, `overscroll-behavior: contain`.
 7. 이미지: `loading="lazy"` + `aspect-ratio` 고정 + `object-cover`.
-8. 폰트 최소 크기: `14px`.
+8. 폰트 크기: 본문 `16px`(`text-base`) 기본, 보조 라벨 `14px`(`text-sm`), 캡션만 `12px`(`text-xs`). 11px 이하 금지.
 9. 페이지 하단 패딩: `pb-24` (BottomNav 가림 방지).
 10. 가로 스크롤: `overflow-x-auto` + `snap-x snap-mandatory` + `scrollbar-hide`.
 
@@ -73,9 +73,24 @@ Primary Hover: #047857 (에메랄드 700)
 - 한국어: **Pretendard** (CDN)
 - 영문/숫자: **Inter** (fallback)
 - `font-family: 'Pretendard Variable', 'Inter', system-ui, sans-serif`
-- 제목: `text-xl font-bold` (20px)
-- 본문: `text-sm` (14px) 또는 `text-base` (16px)
-- 캡션: `text-xs text-slate-500` (12px)
+
+#### 모바일 폰트 크기 체계 (업계 표준 기반)
+| 용도 | Tailwind | 크기 | 비고 |
+|------|----------|------|------|
+| 페이지 제목 (H1) | `text-xl font-bold` | 20px | 페이지 최상단 제목 |
+| 섹션 제목 (H2) | `text-lg font-semibold` | 18px | 카드/섹션 헤더 |
+| 본문/라벨 | `text-base` | **16px** | **기본값. 모바일 본문 표준** |
+| 보조 라벨/배지 | `text-sm` | 14px | 칩, 배지, 부가 라벨 |
+| 캡션/메타 정보 | `text-xs text-slate-500` | 12px | 날짜, 거리, 카운트 등 보조 정보만 |
+| 절대 최소 | — | 12px | 11px 이하 사용 금지 |
+
+#### 폰트 크기 적용 원칙
+1. **본문 텍스트는 반드시 16px(`text-base`)** — Apple·Google 공통 권장, iOS Safari 자동 줌 방지
+2. **라벨·에러메시지·안내문구도 16px(`text-base`)** — 사용자가 읽어야 하는 텍스트는 모두 16px
+3. **칩·배지·보조 라벨은 14px(`text-sm`)** — 공간 절약이 필요한 UI 요소
+4. **12px(`text-xs`)는 캡션 전용** — 날짜("3일 전"), 거리("도보 5분"), 카운트("1/10") 등 보조 정보만
+5. **커스텀 px 크기(`text-[15px]` 등) 사용 금지** — 반드시 Tailwind 표준 클래스 사용
+6. **BottomNav 탭 라벨은 12px(`text-xs`) 허용** — 네비게이션 라벨은 아이콘과 함께 사용되므로 예외
 
 ### 컴포넌트 스타일 패턴
 ```

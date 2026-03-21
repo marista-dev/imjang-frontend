@@ -238,8 +238,8 @@ const MapSelectOverlay = ({ onConfirm, onClose }) => {
 
       {/* 하단 주소 + 확인 */}
       <div className="border-t border-slate-100 px-5 pb-safe pt-4">
-        <p className="mb-1 text-sm text-slate-500">선택된 위치</p>
-        <p className="mb-4 truncate text-sm font-medium text-slate-800">{currentAddress}</p>
+        <p className="mb-1 text-base text-slate-500">선택된 위치</p>
+        <p className="mb-4 truncate text-base font-medium text-slate-800">{currentAddress}</p>
         <button
           type="button"
           onClick={handleConfirm}
@@ -429,8 +429,8 @@ const PropertyNewPage = () => {
           </div>
           <div className="px-5 pb-3">
             <div className="mb-1.5 flex items-center justify-between">
-              <span className="text-sm font-semibold text-slate-700">필수 항목</span>
-              <span className="text-sm font-bold text-primary">{requiredDone}/5</span>
+              <span className="text-base font-semibold text-slate-700">필수 항목</span>
+              <span className="text-base font-bold text-primary">{requiredDone}/5</span>
             </div>
             <div className="h-3 w-full overflow-hidden rounded-full bg-slate-200">
               <div
@@ -459,7 +459,7 @@ const PropertyNewPage = () => {
               )}
             >
               <MapPin size={16} className={form.address ? 'text-primary' : 'text-slate-400'} />
-              <span className="flex-1 truncate text-sm">
+              <span className="flex-1 truncate text-base">
                 {form.address || '주소를 검색해주세요'}
               </span>
               {form.address && <Check size={16} className="text-primary" />}
@@ -504,7 +504,7 @@ const PropertyNewPage = () => {
 
             {/* 거래 유형 */}
             <div>
-              <p className="mb-2 text-sm font-medium text-slate-700">유형</p>
+              <p className="mb-2 text-base font-medium text-slate-700">유형</p>
               <Tabs.Root value={form.priceType} onValueChange={(v) => set('priceType', v)}>
                 <Tabs.List className="flex rounded-xl bg-slate-100 p-1">
                   {PRICE_TYPES.map(({ value, label }) => (
@@ -525,7 +525,7 @@ const PropertyNewPage = () => {
 
             {/* 가격 */}
             <div>
-              <p className="mb-2 text-sm font-medium text-slate-700">가격 (만원)</p>
+              <p className="mb-2 text-base font-medium text-slate-700">가격 (만원)</p>
               {form.priceType === 'MONTHLY' && (
                 <div className="grid grid-cols-2 gap-2">
                   <PriceInputWithHint label="보증금" value={form.deposit} onChange={numInput('deposit')} placeholder="1000" />
@@ -542,7 +542,7 @@ const PropertyNewPage = () => {
 
             {/* 평수 */}
             <div>
-              <p className="mb-2 text-sm font-medium text-slate-700">평수 (㎡)</p>
+              <p className="mb-2 text-base font-medium text-slate-700">평수 (㎡)</p>
               <input type="text" inputMode="decimal" placeholder="예: 33"
                 value={form.area} onChange={numInput('area')}
                 className="h-12 w-full rounded-xl border border-slate-200 px-4 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400" />
@@ -551,8 +551,8 @@ const PropertyNewPage = () => {
             {/* 관리비 슬라이더 */}
             <div>
               <div className="mb-2 flex items-center justify-between">
-                <p className="text-sm font-medium text-slate-700">관리비</p>
-                <span className="text-sm font-semibold text-primary">
+                <p className="text-base font-medium text-slate-700">관리비</p>
+                <span className="text-base font-semibold text-primary">
                   {form.maintenanceFee === 0 ? '없음' : `${form.maintenanceFee}만원`}
                 </span>
               </div>
@@ -568,7 +568,7 @@ const PropertyNewPage = () => {
                   background: `linear-gradient(to right, #059669 ${form.maintenanceFee * 2}%, #E2E8F0 ${form.maintenanceFee * 2}%)`,
                 }}
               />
-              <div className="mt-1 flex justify-between text-sm text-slate-400">
+              <div className="mt-1 flex justify-between text-base text-slate-400">
                 <span>0만원</span>
                 <span>50만원</span>
               </div>
@@ -576,7 +576,7 @@ const PropertyNewPage = () => {
 
             {/* 주차 */}
             <div>
-              <p className="mb-2 text-sm font-medium text-slate-700">주차</p>
+              <p className="mb-2 text-base font-medium text-slate-700">주차</p>
               <div className="flex gap-2">
                 {PARKING_OPTIONS.map(({ value, label }) => (
                   <ChipButton
@@ -593,7 +593,7 @@ const PropertyNewPage = () => {
 
             {/* 층수 */}
             <div>
-              <p className="mb-2 text-sm font-medium text-slate-700">층수</p>
+              <p className="mb-2 text-base font-medium text-slate-700">층수</p>
               <div className="flex items-center gap-2">
                 <input type="text" inputMode="numeric" placeholder="현재층"
                   value={form.currentFloor} onChange={numInput('currentFloor')}
@@ -612,7 +612,7 @@ const PropertyNewPage = () => {
 
             {/* 전체 만족도 */}
             <div>
-              <p className="mb-2 text-sm font-medium text-slate-700">
+              <p className="mb-2 text-base font-medium text-slate-700">
                 전체 만족도<span className="ml-0.5 text-danger">*</span>
               </p>
               <div className="flex items-center gap-3">
@@ -622,7 +622,7 @@ const PropertyNewPage = () => {
                   size="lg"
                 />
                 {form.rating > 0 && (
-                  <span className="text-sm text-slate-500">
+                  <span className="text-base text-slate-500">
                     {['', '별로에요', '아쉬워요', '보통이에요', '좋아요', '최고에요'][form.rating]}
                   </span>
                 )}
@@ -631,7 +631,7 @@ const PropertyNewPage = () => {
 
             {/* 가격 평가 */}
             <div>
-              <p className="mb-2 text-sm font-medium text-slate-700">
+              <p className="mb-2 text-base font-medium text-slate-700">
                 가격 평가<span className="ml-0.5 text-danger">*</span>
               </p>
               <div className="flex gap-2">
@@ -650,7 +650,7 @@ const PropertyNewPage = () => {
 
             {/* 즉시 입주 가능 */}
             <div>
-              <p className="mb-2 text-sm font-medium text-slate-700">
+              <p className="mb-2 text-base font-medium text-slate-700">
                 즉시 입주 가능<span className="ml-0.5 text-danger">*</span>
               </p>
               <div className="flex gap-2">
@@ -673,7 +673,7 @@ const PropertyNewPage = () => {
 
             {/* 재방문 의사 */}
             <div>
-              <p className="mb-2 text-sm font-medium text-slate-700">
+              <p className="mb-2 text-base font-medium text-slate-700">
                 재방문 의사<span className="ml-0.5 text-danger">*</span>
               </p>
               <div className="flex gap-2">
@@ -764,7 +764,7 @@ const PropertyNewPage = () => {
         {/* ── 하단 고정 버튼 ───────────────────────────────────── */}
         <div className="fixed bottom-0 left-0 right-0 z-20 mx-auto w-full max-w-app border-t border-slate-100 bg-white/95 px-5 pb-safe pt-3 backdrop-blur-sm">
           {!allRequiredDone && (
-            <p className="mb-2 text-center text-sm text-slate-400">
+            <p className="mb-2 text-center text-base text-slate-400">
               필수 항목 {5 - requiredDone}개를 더 입력해주세요
             </p>
           )}

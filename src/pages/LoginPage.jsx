@@ -44,7 +44,7 @@ const LoginPage = () => {
             <Home size={28} className="text-white" />
           </div>
           <h1 className="text-2xl font-bold text-slate-800">임장노트</h1>
-          <p className="mt-1 text-sm text-slate-500">부동산 현장 방문 기록 앱</p>
+          <p className="mt-1 text-base text-slate-500">부동산 현장 방문 기록 앱</p>
         </div>
 
         {/* 카드 */}
@@ -54,7 +54,7 @@ const LoginPage = () => {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             {/* 이메일 */}
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-slate-700">이메일</label>
+              <label className="mb-1.5 block text-base font-medium text-slate-700">이메일</label>
               <input
                 type="email"
                 placeholder="example@email.com"
@@ -71,12 +71,12 @@ const LoginPage = () => {
                   },
                 })}
               />
-              {errors.email && <p className="mt-1 text-sm text-danger">{errors.email.message}</p>}
+              {errors.email && <p className="mt-1 text-base text-danger">{errors.email.message}</p>}
             </div>
 
             {/* 비밀번호 */}
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-slate-700">비밀번호</label>
+              <label className="mb-1.5 block text-base font-medium text-slate-700">비밀번호</label>
               <div className="relative">
                 <input
                   type={showPw ? 'text' : 'password'}
@@ -97,7 +97,7 @@ const LoginPage = () => {
                 </button>
               </div>
               {errors.password && (
-                <p className="mt-1 text-sm text-danger">{errors.password.message}</p>
+                <p className="mt-1 text-base text-danger">{errors.password.message}</p>
               )}
             </div>
 
@@ -106,7 +106,7 @@ const LoginPage = () => {
               <button
                 type="button"
                 onClick={() => toast.info('비밀번호 재설정 기능은 준비 중이에요.')}
-                className="text-sm text-slate-400"
+                className="text-base text-slate-400"
               >
                 비밀번호를 잊으셨나요?
               </button>
@@ -114,7 +114,7 @@ const LoginPage = () => {
 
             {/* 서버 에러 */}
             {errors.root && (
-              <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-danger">
+              <p className="rounded-xl bg-red-50 px-4 py-3 text-base text-danger">
                 {errors.root.message}
               </p>
             )}
@@ -130,7 +130,7 @@ const LoginPage = () => {
           </form>
 
           {/* 회원가입 링크 */}
-          <p className="mt-5 text-center text-sm text-slate-500">
+          <p className="mt-5 text-center text-base text-slate-500">
             아직 계정이 없으신가요?{' '}
             <Link to="/signup" className="font-medium text-primary">
               회원가입

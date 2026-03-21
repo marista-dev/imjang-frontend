@@ -114,12 +114,12 @@ const VerifyEmailPage = () => {
             </div>
             <h2 className="text-lg font-bold text-slate-800">이메일 인증</h2>
             {email ? (
-              <p className="mt-1 text-center text-sm text-slate-500">
+              <p className="mt-1 text-center text-base text-slate-500">
                 <span className="font-medium text-slate-700">{email}</span>으로<br />
                 인증 코드 6자리를 보내드렸어요.
               </p>
             ) : (
-              <p className="mt-1 text-center text-sm text-slate-500">
+              <p className="mt-1 text-center text-base text-slate-500">
                 이메일로 전송된 인증 코드를 입력해주세요.
               </p>
             )}
@@ -152,7 +152,7 @@ const VerifyEmailPage = () => {
 
           {/* 에러 메시지 */}
           {serverError && (
-            <p className="mb-3 rounded-xl bg-red-50 px-4 py-3 text-center text-sm text-danger">
+            <p className="mb-3 rounded-xl bg-red-50 px-4 py-3 text-center text-base text-danger">
               {serverError}
             </p>
           )}
@@ -169,12 +169,12 @@ const VerifyEmailPage = () => {
 
           {/* 재전송 */}
           <div className="mt-4 text-center">
-            <p className="mb-1 text-sm text-slate-500">인증 코드를 받지 못했나요?</p>
+            <p className="mb-1 text-base text-slate-500">인증 코드를 받지 못했나요?</p>
             <button
               type="button"
               disabled={isResending || resendCooldown > 0}
               onClick={() => resend({ email })}
-              className="text-sm font-medium text-primary disabled:text-slate-400"
+              className="text-base font-medium text-primary disabled:text-slate-400"
             >
               {resendCooldown > 0
                 ? `재전송 (${resendCooldown}초)`
@@ -189,7 +189,7 @@ const VerifyEmailPage = () => {
         <div className="mt-4 text-center">
           <Link
             to="/signup"
-            className="inline-flex items-center gap-1 text-sm text-slate-500"
+            className="inline-flex items-center gap-1 text-base text-slate-500"
           >
             <ChevronLeft size={16} />
             회원가입으로 돌아가기

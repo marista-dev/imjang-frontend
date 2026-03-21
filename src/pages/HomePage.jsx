@@ -44,7 +44,7 @@ const HomePage = () => {
       {/* 환영 헤더 */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium tracking-wide text-slate-400">임장노트</span>
+          <span className="text-base font-medium tracking-wide text-slate-400">임장노트</span>
           <button
             type="button"
             onClick={() => setMenuOpen(true)}
@@ -69,7 +69,7 @@ const HomePage = () => {
             <CalendarDays size={20} className="text-primary" />
           </div>
           <div>
-            <p className="text-sm text-slate-500">이번 달</p>
+            <p className="text-base text-slate-500">이번 달</p>
             <p className="text-2xl font-bold text-primary">
               {monthlyCount ?? '-'}
               {monthlyCount !== null && (
@@ -83,7 +83,7 @@ const HomePage = () => {
             <BarChart3 size={20} className="text-blue-600" />
           </div>
           <div>
-            <p className="text-sm text-slate-500">전체 기록</p>
+            <p className="text-base text-slate-500">전체 기록</p>
             <p className="text-2xl font-bold text-slate-800">
               {totalCount ?? '-'}
               {totalCount !== null && (
@@ -117,8 +117,8 @@ const HomePage = () => {
             <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100">
               <BookOpen size={28} className="text-slate-400" />
             </div>
-            <p className="text-sm font-medium text-slate-600">아직 기록한 매물이 없어요</p>
-            <p className="mt-1 text-sm text-slate-400">첫 임장 기록을 남겨보세요!</p>
+            <p className="text-base font-medium text-slate-600">아직 기록한 매물이 없어요</p>
+            <p className="mt-1 text-base text-slate-400">첫 임장 기록을 남겨보세요!</p>
             <button
               type="button"
               onClick={() => navigate('/properties/new')}

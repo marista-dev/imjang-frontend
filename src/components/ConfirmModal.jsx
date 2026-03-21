@@ -30,7 +30,7 @@ export const ConfirmModal = ({
           <Drawer.Handle className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-slate-300" />
 
           <h3 className="text-lg font-bold text-slate-800">{title}</h3>
-          <p className="mt-2 text-sm text-slate-500">{message}</p>
+          <p className="mt-2 text-base text-slate-500">{message}</p>
 
           <div className="mt-6 flex gap-3 pb-2">
             <button

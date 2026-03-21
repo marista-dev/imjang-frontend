@@ -292,7 +292,7 @@ const PropertyEditPage = () => {
         {address && (
           <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3">
             <MapPin size={16} className="flex-shrink-0 text-slate-400" />
-            <span className="flex-1 truncate text-sm text-slate-700">{address}</span>
+            <span className="flex-1 truncate text-base text-slate-700">{address}</span>
           </div>
         )}
 
@@ -301,7 +301,7 @@ const PropertyEditPage = () => {
           <SectionTitle>가격 정보</SectionTitle>
 
           <div>
-            <p className="mb-2 text-sm font-medium text-slate-700">유형</p>
+            <p className="mb-2 text-base font-medium text-slate-700">유형</p>
             <Tabs.Root value={priceType} onValueChange={handlePriceType}>
               <Tabs.List className="flex rounded-xl bg-slate-100 p-1">
                 {PRICE_TYPES.map(({ value, label }) => (
@@ -321,7 +321,7 @@ const PropertyEditPage = () => {
           </div>
 
           <div>
-            <p className="mb-2 text-sm font-medium text-slate-700">가격 (만원)</p>
+            <p className="mb-2 text-base font-medium text-slate-700">가격 (만원)</p>
             {priceType === 'MONTHLY' && (
               <div className="grid grid-cols-2 gap-2">
                 <PriceInputWithHint label="보증금" value={deposit} onChange={numInput(setDeposit)} placeholder="1000" />
@@ -342,14 +342,14 @@ const PropertyEditPage = () => {
           <SectionTitle>기본 정보</SectionTitle>
 
           <div>
-            <p className="mb-2 text-sm font-medium text-slate-700">평수 (㎡)</p>
+            <p className="mb-2 text-base font-medium text-slate-700">평수 (㎡)</p>
             <input type="text" inputMode="decimal" placeholder="예: 33"
               value={area} onChange={numInput(setArea)}
               className="h-12 w-full rounded-xl border border-slate-200 px-4 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400" />
           </div>
 
           <div>
-            <p className="mb-2 text-sm font-medium text-slate-700">층수</p>
+            <p className="mb-2 text-base font-medium text-slate-700">층수</p>
             <div className="flex items-center gap-2">
               <input type="text" inputMode="numeric" placeholder="현재층"
                 value={currentFloor} onChange={numInput(setCurrentFloor)}
@@ -362,11 +362,11 @@ const PropertyEditPage = () => {
           </div>
 
           <div>
-            <p className="mb-2 text-sm font-medium text-slate-700">전체 만족도</p>
+            <p className="mb-2 text-base font-medium text-slate-700">전체 만족도</p>
             <div className="flex items-center gap-3">
               <RatingStars rating={rating} onChange={handleRating} size="lg" />
               {rating > 0 && (
-                <span className="text-sm text-slate-500">
+                <span className="text-base text-slate-500">
                   {['', '별로에요', '아쉬워요', '보통이에요', '좋아요', '최고에요'][rating]}
                 </span>
               )}
@@ -374,7 +374,7 @@ const PropertyEditPage = () => {
           </div>
 
           <div>
-            <p className="mb-2 text-sm font-medium text-slate-700">가격 평가</p>
+            <p className="mb-2 text-base font-medium text-slate-700">가격 평가</p>
             <div className="flex gap-2">
               {PRICE_RATINGS.map(({ value, label }) => (
                 <ChipButton
@@ -395,7 +395,7 @@ const PropertyEditPage = () => {
           <SectionTitle>매물 환경</SectionTitle>
 
           <div>
-            <p className="mb-2 text-sm font-medium text-slate-700">주차</p>
+            <p className="mb-2 text-base font-medium text-slate-700">주차</p>
             <div className="flex gap-2">
               {PARKING_OPTIONS.map(({ value, label }) => (
                 <ChipButton
@@ -412,8 +412,8 @@ const PropertyEditPage = () => {
 
           <div>
             <div className="mb-2 flex items-center justify-between">
-              <p className="text-sm font-medium text-slate-700">관리비</p>
-              <span className="text-sm font-semibold text-primary">
+              <p className="text-base font-medium text-slate-700">관리비</p>
+              <span className="text-base font-semibold text-primary">
                 {maintenanceFee === 0 ? '없음' : `${maintenanceFee}만원`}
               </span>
             </div>
@@ -429,7 +429,7 @@ const PropertyEditPage = () => {
                 background: `linear-gradient(to right, #059669 ${maintenanceFee * 2}%, #E2E8F0 ${maintenanceFee * 2}%)`,
               }}
             />
-            <div className="mt-1 flex justify-between text-sm text-slate-400">
+            <div className="mt-1 flex justify-between text-base text-slate-400">
               <span>0만원</span>
               <span>50만원</span>
             </div>
@@ -437,14 +437,14 @@ const PropertyEditPage = () => {
 
           <div className="space-y-3">
             <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3">
-              <p className="text-sm font-medium text-slate-800">즉시 입주 가능</p>
+              <p className="text-base font-medium text-slate-800">즉시 입주 가능</p>
               <Switch.Root checked={moveInAvailable} onCheckedChange={handleMoveIn}
                 className={cn('relative h-6 w-11 rounded-full transition-colors', moveInAvailable ? 'bg-primary' : 'bg-slate-200')}>
                 <Switch.Thumb className="block h-5 w-5 translate-x-0.5 rounded-full bg-white shadow transition-transform data-[state=checked]:translate-x-[22px]" />
               </Switch.Root>
             </div>
             <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3">
-              <p className="text-sm font-medium text-slate-800">재방문 의향 있음</p>
+              <p className="text-base font-medium text-slate-800">재방문 의향 있음</p>
               <Switch.Root checked={revisitIntention} onCheckedChange={handleRevisit}
                 className={cn('relative h-6 w-11 rounded-full transition-colors', revisitIntention ? 'bg-primary' : 'bg-slate-200')}>
                 <Switch.Thumb className="block h-5 w-5 translate-x-0.5 rounded-full bg-white shadow transition-transform data-[state=checked]:translate-x-[22px]" />

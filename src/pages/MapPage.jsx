@@ -289,7 +289,7 @@ const MapPage = () => {
       {!mapReady && !mapError && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-50">
           <Spinner />
-          <p className="mt-3 text-sm text-slate-500">지도를 불러오는 중...</p>
+          <p className="mt-3 text-base text-slate-500">지도를 불러오는 중...</p>
         </div>
       )}
 
@@ -297,7 +297,7 @@ const MapPage = () => {
       {mapError && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-50 px-6 text-center">
           <MapPin size={40} className="mb-3 text-slate-300" />
-          <p className="text-sm font-medium text-slate-600">지도를 불러올 수 없어요</p>
+          <p className="text-base font-medium text-slate-600">지도를 불러올 수 없어요</p>
           <p className="mt-1 text-xs text-slate-400">카카오맵 API 키를 확인해주세요.</p>
         </div>
       )}
@@ -382,7 +382,7 @@ const MapPage = () => {
 
                 {/* 정보 */}
                 <div className="flex min-w-0 flex-1 flex-col gap-1">
-                  <p className="truncate text-sm font-semibold text-slate-800">
+                  <p className="truncate text-base font-semibold text-slate-800">
                     {selectedProperty.address}
                   </p>
                   <PriceDisplay
@@ -435,7 +435,7 @@ const MapPage = () => {
 
             {/* 선호도 필터 */}
             <div className="mb-5">
-              <p className="mb-3 text-sm font-semibold text-slate-700">선호도</p>
+              <p className="mb-3 text-base font-semibold text-slate-700">선호도</p>
               <div className="space-y-2">
                 {RATING_FILTERS.map(({ key, label, sublabel, color }) => (
                   <button
@@ -455,7 +455,7 @@ const MapPage = () => {
                         style={{ background: color }}
                       />
                       <div className="text-left">
-                        <p className="text-sm font-medium text-slate-800">{label}</p>
+                        <p className="text-base font-medium text-slate-800">{label}</p>
                         <p className="text-xs text-slate-400">{sublabel}</p>
                       </div>
                     </div>
@@ -480,7 +480,7 @@ const MapPage = () => {
 
             {/* 거래 유형 필터 */}
             <div className="mb-6">
-              <p className="mb-3 text-sm font-semibold text-slate-700">거래 유형</p>
+              <p className="mb-3 text-base font-semibold text-slate-700">거래 유형</p>
               <div className="flex flex-wrap gap-2">
                 {PRICE_TYPE_FILTERS.map(({ value, label }) => (
                   <button

@@ -71,7 +71,7 @@ export const PropertyCard = ({ property, className }) => {
 
       {/* 텍스트 영역 */}
       <div className="p-4">
-        <p className="truncate text-[15px] font-semibold text-slate-800">{address}</p>
+        <p className="truncate text-base font-semibold text-slate-800">{address}</p>
         <div className="mt-1.5 flex items-baseline gap-2">
           <PriceDisplay
             priceType={priceType}

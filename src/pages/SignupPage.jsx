@@ -58,7 +58,7 @@ const SignupPage = () => {
             <Home size={28} className="text-white" />
           </div>
           <h1 className="text-2xl font-bold text-slate-800">임장노트</h1>
-          <p className="mt-1 text-sm text-slate-500">부동산 현장 방문 기록 앱</p>
+          <p className="mt-1 text-base text-slate-500">부동산 현장 방문 기록 앱</p>
         </div>
 
         {/* 카드 */}
@@ -68,7 +68,7 @@ const SignupPage = () => {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             {/* 이름 */}
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-slate-700">이름</label>
+              <label className="mb-1.5 block text-base font-medium text-slate-700">이름</label>
               <input
                 type="text"
                 placeholder="홍길동"
@@ -79,12 +79,12 @@ const SignupPage = () => {
                 )}
                 {...register('name', { required: '이름을 입력해주세요.' })}
               />
-              {errors.name && <p className="mt-1 text-sm text-danger">{errors.name.message}</p>}
+              {errors.name && <p className="mt-1 text-base text-danger">{errors.name.message}</p>}
             </div>
 
             {/* 이메일 */}
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-slate-700">이메일</label>
+              <label className="mb-1.5 block text-base font-medium text-slate-700">이메일</label>
               <input
                 type="email"
                 placeholder="example@email.com"
@@ -101,12 +101,12 @@ const SignupPage = () => {
                   },
                 })}
               />
-              {errors.email && <p className="mt-1 text-sm text-danger">{errors.email.message}</p>}
+              {errors.email && <p className="mt-1 text-base text-danger">{errors.email.message}</p>}
             </div>
 
             {/* 비밀번호 */}
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-slate-700">비밀번호</label>
+              <label className="mb-1.5 block text-base font-medium text-slate-700">비밀번호</label>
               <div className="relative">
                 <input
                   type={showPw ? 'text' : 'password'}
@@ -127,7 +127,7 @@ const SignupPage = () => {
                 </button>
               </div>
               {errors.password && (
-                <p className="mt-1 text-sm text-danger">{errors.password.message}</p>
+                <p className="mt-1 text-base text-danger">{errors.password.message}</p>
               )}
 
               {/* 비밀번호 조건 실시간 표시 */}
@@ -144,7 +144,7 @@ const SignupPage = () => {
                         )}
                         <span
                           className={cn(
-                            'text-sm',
+                            'text-base',
                             passed ? 'text-success' : 'text-slate-400'
                           )}
                         >
@@ -159,7 +159,7 @@ const SignupPage = () => {
 
             {/* 서버 에러 */}
             {errors.root && (
-              <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-danger">
+              <p className="rounded-xl bg-red-50 px-4 py-3 text-base text-danger">
                 {errors.root.message}
               </p>
             )}
@@ -175,7 +175,7 @@ const SignupPage = () => {
           </form>
 
           {/* 로그인 링크 */}
-          <p className="mt-5 text-center text-sm text-slate-500">
+          <p className="mt-5 text-center text-base text-slate-500">
             이미 계정이 있으신가요?{' '}
             <Link to="/login" className="font-medium text-primary">
               로그인

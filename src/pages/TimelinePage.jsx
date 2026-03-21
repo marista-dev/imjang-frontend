@@ -153,13 +153,13 @@ const TimelinePage = () => {
             </div>
             {searchQuery || activeFilter !== 'ALL' ? (
               <>
-                <p className="text-sm font-medium text-slate-600">검색 결과가 없어요</p>
-                <p className="mt-1 text-xs text-slate-400">다른 검색어나 필터를 시도해보세요.</p>
+                <p className="text-base font-medium text-slate-600">검색 결과가 없어요</p>
+                <p className="mt-1 text-base text-slate-400">다른 검색어나 필터를 시도해보세요.</p>
               </>
             ) : (
               <>
-                <p className="text-sm font-medium text-slate-600">타임라인이 비어있어요</p>
-                <p className="mt-1 text-xs text-slate-400">매물을 기록하면 날짜별로 정리돼요!</p>
+                <p className="text-base font-medium text-slate-600">타임라인이 비어있어요</p>
+                <p className="mt-1 text-base text-slate-400">매물을 기록하면 날짜별로 정리돼요!</p>
                 <button
                   type="button"
                   onClick={() => navigate('/properties/new')}
@@ -181,7 +181,7 @@ const TimelinePage = () => {
                 <div className="absolute left-0 top-[7px] h-[15px] w-[15px] rounded-full border-2 border-primary bg-white" />
 
                 <div className="mb-2 flex items-center gap-2">
-                  <span className="text-sm font-semibold text-slate-700">
+                  <span className="text-base font-semibold text-slate-700">
                     {formatGroupDate(date)}
                   </span>
                   <span className="text-xs text-slate-400">{properties.length}개</span>
