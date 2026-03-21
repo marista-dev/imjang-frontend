@@ -576,3 +576,10 @@ docs: 문서 수정
 - 카카오맵 API 키: `.env`의 `VITE_KAKAO_MAP_KEY`
 - 이미지 업로드: `multipart/form-data`
 - 가격 포맷: 만원 → 억/만 변환 (35000 → "3.5억")
+
+
+---
+
+## 응답 언어
+
+**Claude는 항상 한국어로 응답한다.**
