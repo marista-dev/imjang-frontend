@@ -304,10 +304,10 @@ const MapPage = () => {
 
       {/* ── 상단 검색 + 필터 오버레이 ─────────────────────────────────────────── */}
       {mapReady && (
-        <div className="absolute left-0 right-0 top-0 z-10 px-4 pt-4">
-          <div className="flex gap-2">
+        <div className="absolute left-0 right-0 top-0 z-10 px-3 pt-3">
+          <div className="flex gap-1.5">
             {/* 검색 */}
-            <form onSubmit={handleSearch} className="flex h-11 flex-1 items-center gap-2 rounded-full bg-white/90 px-4 shadow-md backdrop-blur-sm">
+            <form onSubmit={handleSearch} className="flex h-11 flex-1 items-center gap-2 rounded-full bg-white/90 px-3 shadow-md backdrop-blur-sm">
               <Search size={16} className="flex-shrink-0 text-slate-400" />
               <input
                 type="search"
