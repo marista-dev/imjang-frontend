@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -572,10 +573,10 @@ const PropertyDetailPage = () => {
         onCancel={() => setDeleteOpen(false)}
       />
 
-      {/* 사진 전체화면 뷰어 — 별도 portal 없이 fixed로 뷰포트 전체 덮기 */}
-      {photoViewerIdx !== null && property.images?.length > 0 && (
+      {/* 사진 전체화면 뷰어 — Portal로 body에 렌더링 (조상 transform 영향 회피) */}
+      {photoViewerIdx !== null && property.images?.length > 0 && createPortal(
         <div
-          className="fixed left-0 top-0 z-[100] h-[100dvh] w-screen bg-black"
+          className="fixed inset-0 z-[100] bg-black"
           onClick={(e) => { if (e.target === e.currentTarget) setPhotoViewerIdx(null); }}
         >
           <button
@@ -614,7 +615,8 @@ const PropertyDetailPage = () => {
               <ChevronLeft size={24} />
             </button>
           )}
-        </div>
+        </div>,
+        document.body,
       )}
     </div>
   );
