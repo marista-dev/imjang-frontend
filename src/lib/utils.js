@@ -1,6 +1,8 @@
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
+const API_ORIGIN = (import.meta.env.VITE_API_URL || '').replace('/api/v1', '');
+
 /**
  * shadcn 스타일 className 병합 유틸리티
  * clsx로 조건부 클래스를 처리하고, tailwind-merge로 충돌을 해결한다.
@@ -53,6 +55,17 @@ export const getRelativeDate = (dateStr) => {
 };
 
 /**
+ * 상대경로 이미지 URL을 절대경로로 변환
+ * 프로덕션에서는 API_ORIGIN(api.ddangkun.cloud)을 붙이고,
+ * 로컬에서는 빈 문자열이라 상대경로 그대로 유지(Vite proxy 사용).
+ */
+export const getImageUrl = (url) => {
+  if (!url) return null;
+  if (url.startsWith('http')) return url;
+  return `${API_ORIGIN}${url}`;
+};
+
+/**
  * 백엔드 API 응답의 매물 데이터를 프론트엔드 구조로 정규화
  * - priceInfo 중첩 구조 → flat
  * - evaluation 중첩 구조 → flat
@@ -80,11 +93,11 @@ export const normalizeProperty = (p) => ({
   images: (() => {
     const imgs = p.images ?? [];
     const normalized = imgs.map((img, idx) =>
-      typeof img === 'string' ? { id: idx, url: img } : img,
+      typeof img === 'string' ? { id: idx, url: getImageUrl(img) } : { ...img, url: getImageUrl(img.url) },
     );
     // 리스트 API가 thumbnailUrl 단일 필드로 반환하는 경우 fallback
     if (normalized.length === 0 && p.thumbnailUrl) {
-      return [{ id: 0, url: p.thumbnailUrl }];
+      return [{ id: 0, url: getImageUrl(p.thumbnailUrl) }];
     }
     return normalized;
   })(),
