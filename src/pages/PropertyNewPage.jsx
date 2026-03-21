@@ -737,31 +737,29 @@ const PropertyNewPage = () => {
             </div>
 
             {/* 추가 사진 */}
-            {form.images.length > 3 || true ? (
-              <div className="grid grid-cols-4 gap-2">
-                {form.images.slice(3).map((img) => (
-                  <div key={img.id} className="relative aspect-square overflow-hidden rounded-xl">
-                    <img src={img.url} alt="" loading="lazy" className="h-full w-full object-cover" />
-                    <button
-                      type="button"
-                      onClick={() => handleImageRemove(img.id)}
-                      className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/50"
-                    >
-                      <X size={14} className="text-white" />
-                    </button>
-                  </div>
-                ))}
-                {form.images.length < 10 && (
-                  <ImageSlot
-                    label="추가"
-                    required={false}
-                    image={null}
-                    onUpload={handleImageUpload}
-                    onRemove={handleImageRemove}
-                  />
-                )}
-              </div>
-            ) : null}
+            <div className="grid grid-cols-4 gap-2">
+              {form.images.slice(3).map((img) => (
+                <div key={img.id} className="relative aspect-square overflow-hidden rounded-xl">
+                  <img src={img.url} alt="" loading="lazy" className="h-full w-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => handleImageRemove(img.id)}
+                    className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/50"
+                  >
+                    <X size={14} className="text-white" />
+                  </button>
+                </div>
+              ))}
+              {form.images.length < 10 && (
+                <ImageSlot
+                  label="추가"
+                  required={false}
+                  image={null}
+                  onUpload={handleImageUpload}
+                  onRemove={handleImageRemove}
+                />
+              )}
+            </div>
 
             <p className="text-right text-xs text-slate-400">{form.images.length}/10장</p>
           </Section>

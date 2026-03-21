@@ -65,7 +65,7 @@ const TimelinePage = () => {
           <button
             type="button"
             onClick={() => navigate('/properties/new')}
-            className="flex h-10 items-center gap-1.5 rounded-xl bg-primary px-4 text-sm font-semibold text-white active:scale-[0.98]"
+            className="flex h-11 items-center gap-1.5 rounded-xl bg-primary px-4 text-sm font-semibold text-white active:scale-[0.98]"
           >
             <Plus size={16} />
             기록

@@ -52,7 +52,7 @@ const HomePage = () => {
           <button
             type="button"
             onClick={() => setMenuOpen(true)}
-            className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-400 active:bg-slate-100"
+            className="flex h-11 w-11 items-center justify-center rounded-xl text-slate-400 active:bg-slate-100"
           >
             <LogOut size={20} />
           </button>

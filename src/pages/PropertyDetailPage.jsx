@@ -281,7 +281,7 @@ const PropertyDetailPage = () => {
         <button
           type="button"
           onClick={() => navigate(-1)}
-          className="flex h-10 w-10 items-center justify-center rounded-full bg-white/80 backdrop-blur-sm shadow-sm active:scale-95 transition-all"
+          className="flex h-11 w-11 items-center justify-center rounded-full bg-white/80 backdrop-blur-sm shadow-sm active:scale-95 transition-all"
         >
           <ChevronLeft size={22} className="text-slate-700" />
         </button>
@@ -289,14 +289,14 @@ const PropertyDetailPage = () => {
           <button
             type="button"
             onClick={handleShare}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-white/80 backdrop-blur-sm shadow-sm active:scale-95 transition-all"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-white/80 backdrop-blur-sm shadow-sm active:scale-95 transition-all"
           >
             <Share2 size={18} className="text-slate-700" />
           </button>
           <button
             type="button"
             onClick={() => setMenuOpen(true)}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-white/80 backdrop-blur-sm shadow-sm active:scale-95 transition-all"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-white/80 backdrop-blur-sm shadow-sm active:scale-95 transition-all"
           >
             <MoreVertical size={22} className="text-slate-700" />
           </button>
