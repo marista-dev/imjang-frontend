@@ -76,10 +76,18 @@ export const normalizeProperty = (p) => ({
   canMoveIn: p.evaluation?.moveInAvailable ?? p.canMoveIn ?? null,
   revisitWanted: p.evaluation?.revisitIntention ?? p.revisitWanted ?? null,
   priceRating: p.evaluation?.priceEvaluation ?? p.priceRating ?? null,
-  // 이미지 정규화 (문자열 배열 → 객체 배열)
-  images: (p.images ?? []).map((img, idx) =>
-    typeof img === 'string' ? { id: idx, url: img } : img
-  ),
+  // 이미지 정규화 (문자열 배열 or thumbnailUrl → 객체 배열)
+  images: (() => {
+    const imgs = p.images ?? [];
+    const normalized = imgs.map((img, idx) =>
+      typeof img === 'string' ? { id: idx, url: img } : img,
+    );
+    // 리스트 API가 thumbnailUrl 단일 필드로 반환하는 경우 fallback
+    if (normalized.length === 0 && p.thumbnailUrl) {
+      return [{ id: 0, url: p.thumbnailUrl }];
+    }
+    return normalized;
+  })(),
 });
 
 /**
