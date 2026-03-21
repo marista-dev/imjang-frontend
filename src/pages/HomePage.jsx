@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { Plus, ChevronRight, Home, BookOpen, MapPin, Clock, LogOut } from 'lucide-react';
+import { Plus, ChevronRight, Home, BookOpen, LogOut } from 'lucide-react';
 import { toast } from 'sonner';
 import { Drawer } from 'vaul';
 import { propertyApi } from '@/api/property';
@@ -64,7 +64,7 @@ const HomePage = () => {
       </div>
 
       {/* 통계 카드 */}
-      <div className="mb-4 grid grid-cols-2 gap-3">
+      <div className="mb-6 grid grid-cols-2 gap-3">
         <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
           <p className="text-xs text-slate-500 mb-1">이번 달 기록</p>
           <p className="text-2xl font-bold text-primary">
@@ -83,40 +83,6 @@ const HomePage = () => {
             )}
           </p>
         </div>
-      </div>
-
-      {/* 퀵 액션 버튼 */}
-      <div className="mb-6 grid grid-cols-3 gap-3">
-        <button
-          type="button"
-          onClick={() => navigate('/properties/new')}
-          className="flex flex-col items-center gap-2 rounded-2xl border border-slate-200 bg-white py-4 shadow-sm active:scale-[0.98] transition-all"
-        >
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-50">
-            <Plus size={20} className="text-primary" />
-          </div>
-          <span className="text-xs font-medium text-slate-700">기록하기</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => navigate('/map')}
-          className="flex flex-col items-center gap-2 rounded-2xl border border-slate-200 bg-white py-4 shadow-sm active:scale-[0.98] transition-all"
-        >
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-50">
-            <MapPin size={20} className="text-primary" />
-          </div>
-          <span className="text-xs font-medium text-slate-700">지도 보기</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => navigate('/timeline')}
-          className="flex flex-col items-center gap-2 rounded-2xl border border-slate-200 bg-white py-4 shadow-sm active:scale-[0.98] transition-all"
-        >
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-50">
-            <Clock size={20} className="text-primary" />
-          </div>
-          <span className="text-xs font-medium text-slate-700">타임라인</span>
-        </button>
       </div>
 
       {/* 최근 매물 */}
