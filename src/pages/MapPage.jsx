@@ -8,7 +8,7 @@ import { mapApi } from '@/api/map';
 import { PriceDisplay } from '@/components/PriceDisplay';
 import { RatingStars } from '@/components/RatingStars';
 import { Spinner } from '@/components/Spinner';
-import { cn, normalizeProperty } from '@/lib/utils';
+import { cn, normalizeProperty, getImageUrl } from '@/lib/utils';
 
 // ─── 헬퍼 ────────────────────────────────────────────────────────────────────
 
@@ -368,7 +368,7 @@ const MapPage = () => {
                 <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl bg-slate-100">
                   {selectedProperty.thumbnailUrl ? (
                     <img
-                      src={selectedProperty.thumbnailUrl}
+                      src={getImageUrl(selectedProperty.thumbnailUrl)}
                       alt={selectedProperty.address}
                       loading="lazy"
                       className="h-full w-full object-cover"

@@ -10,7 +10,7 @@ import { imageApi } from '@/api/image';
 import { RatingStars } from '@/components/RatingStars';
 import { Spinner } from '@/components/Spinner';
 import { ConfirmModal } from '@/components/ConfirmModal';
-import { cn } from '@/lib/utils';
+import { cn, getImageUrl } from '@/lib/utils';
 import { Section, SectionTitle, ChipButton, PriceInputWithHint } from '@/components/FormSection';
 
 const PRICE_TYPES = [
@@ -54,7 +54,7 @@ const EditImageSection = ({ propertyId, images, onImagesChange, onDirty }) => {
       }
       try {
         const res = await imageApi.addToProperty(propertyId, file);
-        onImagesChange((prev) => [...prev, { id: res.data.imageId, url: res.data.thumbnailUrl }]);
+        onImagesChange((prev) => [...prev, { id: res.data.imageId, url: getImageUrl(res.data.thumbnailUrl) }]);
         onDirty?.();
       } catch {
         toast.error('이미지 업로드에 실패했어요.');

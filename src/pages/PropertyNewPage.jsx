@@ -11,7 +11,7 @@ import { propertyApi } from '@/api/property';
 import { imageApi } from '@/api/image';
 import { RatingStars } from '@/components/RatingStars';
 import { Spinner } from '@/components/Spinner';
-import { cn, formatPrice } from '@/lib/utils';
+import { cn, formatPrice, getImageUrl } from '@/lib/utils';
 import { Section, SectionTitle, ChipButton, PriceInputWithHint } from '@/components/FormSection';
 
 // ─── 상수 ──────────────────────────────────────────────────────────────────
@@ -77,7 +77,7 @@ const ImageSlot = ({ label, required, image, onUpload, onRemove }) => {
     setUploading(true);
     try {
       const res = await imageApi.upload(file);
-      onUpload({ id: res.data.imageId ?? res.data.id, url: res.data.thumbnailUrl ?? res.data.url });
+      onUpload({ id: res.data.imageId ?? res.data.id, url: getImageUrl(res.data.thumbnailUrl ?? res.data.url) });
     } catch {
       toast.error('이미지 업로드에 실패했어요.');
     } finally {

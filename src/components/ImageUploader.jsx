@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { ImagePlus, X } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, getImageUrl } from '@/lib/utils';
 import { imageApi } from '@/api/image';
 import { toast } from 'sonner';
 
@@ -31,7 +31,7 @@ export const ImageUploader = ({
           const uploaded = res.data;
           onImagesChange((prev) => [
             ...prev,
-            { id: uploaded.imageId, url: uploaded.thumbnailUrl },
+            { id: uploaded.imageId, url: getImageUrl(uploaded.thumbnailUrl) },
           ]);
         } catch {
           toast.error('이미지 업로드에 실패했어요.');
