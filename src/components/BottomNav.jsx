@@ -39,7 +39,7 @@ const BottomNav = () => {
     >
       {/* 탭 pill */}
       <div
-        className="inline-flex items-center rounded-full p-[5px]"
+        className="inline-flex items-center rounded-full p-[3px]"
         style={{
           background: 'rgba(255,255,255,0.95)',
           boxShadow: '0 4px 20px rgba(0,0,0,0.10), 0 0 0 0.5px rgba(0,0,0,0.06)',
@@ -50,17 +50,13 @@ const BottomNav = () => {
             key={path}
             type="button"
             onClick={() => navigate(path)}
-            className="flex w-[82px] flex-col items-center justify-center py-[9px]"
+            className={cn(
+              'flex w-[82px] flex-col items-center gap-0.5 rounded-full py-[9px] transition-all duration-200',
+              isActive(path) ? 'bg-primary text-white' : 'text-slate-400',
+            )}
           >
-            <span
-              className={cn(
-                'flex flex-col items-center gap-0.5 rounded-full px-5 py-[5px] transition-all duration-200',
-                isActive(path) ? 'bg-primary text-white' : 'text-slate-400',
-              )}
-            >
-              <Icon size={17} strokeWidth={1.8} />
-              <span className="text-[9px] font-medium leading-none">{label}</span>
-            </span>
+            <Icon size={17} strokeWidth={1.8} />
+            <span className="text-[9px] font-medium leading-none">{label}</span>
           </button>
         ))}
       </div>
