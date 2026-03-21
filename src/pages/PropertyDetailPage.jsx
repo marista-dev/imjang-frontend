@@ -223,14 +223,6 @@ const PropertyDetailPage = () => {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [photoViewerIdx, setPhotoViewerIdx] = useState(null);
 
-  // 포토뷰어 열릴 때 body 스크롤 잠금
-  useEffect(() => {
-    if (photoViewerIdx !== null) {
-      document.body.style.overflow = 'hidden';
-      return () => { document.body.style.overflow = ''; };
-    }
-  }, [photoViewerIdx]);
-
   const { data: property, isLoading, isError } = useQuery({
     queryKey: ['property-detail', id],
     queryFn: () => propertyApi.getDetail(id).then((r) => normalizeProperty(r.data)),
@@ -580,10 +572,10 @@ const PropertyDetailPage = () => {
         onCancel={() => setDeleteOpen(false)}
       />
 
-      {/* 사진 전체화면 뷰어 */}
+      {/* 사진 전체화면 뷰어 — 별도 portal 없이 fixed로 뷰포트 전체 덮기 */}
       {photoViewerIdx !== null && property.images?.length > 0 && (
         <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black overflow-hidden touch-none"
+          className="fixed left-0 top-0 z-[100] h-[100dvh] w-screen bg-black"
           onClick={(e) => { if (e.target === e.currentTarget) setPhotoViewerIdx(null); }}
         >
           <button
@@ -596,12 +588,14 @@ const PropertyDetailPage = () => {
           <p className="absolute top-4 left-1/2 z-10 -translate-x-1/2 text-sm text-white/70">
             {photoViewerIdx + 1} / {property.images.length}
           </p>
-          <img
-            src={property.images[photoViewerIdx].originalUrl || property.images[photoViewerIdx].url}
-            alt={`사진 ${photoViewerIdx + 1}`}
-            className="max-h-[100dvh] max-w-full object-contain select-none"
-            draggable={false}
-          />
+          <div className="flex h-full w-full items-center justify-center px-2">
+            <img
+              src={property.images[photoViewerIdx].originalUrl || property.images[photoViewerIdx].url}
+              alt={`사진 ${photoViewerIdx + 1}`}
+              className="max-h-full max-w-full object-contain select-none"
+              draggable={false}
+            />
+          </div>
           {photoViewerIdx > 0 && (
             <button
               type="button"
