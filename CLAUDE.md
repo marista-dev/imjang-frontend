@@ -1,5 +1,10 @@
 # imjang-frontend — Claude Code 프로젝트 가이드
 
+## 작업 워크플로우
+**작업 시작 전 반드시 `TODO.md`를 확인해.** 수정사항이 있으면 위에서부터 순서대로 처리.
+각 항목 완료 후 `npm run build` 확인하고, 해당 항목을 TODO.md에서 삭제.
+모든 항목 처리 후 커밋+푸시.
+
 ## 프로젝트 개요
 부동산 임장(현장 방문) 기록을 관리하는 **모바일 최적화 웹앱**의 프론트엔드.
 백엔드(`imjang-backend`)는 Spring Boot (Java 21) + 세션 기반 인증 + PostgreSQL.
