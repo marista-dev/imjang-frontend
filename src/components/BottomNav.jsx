@@ -37,14 +37,20 @@ const BottomNav = () => {
         isHidden ? 'translate-y-[calc(100%+32px)] opacity-0' : 'translate-y-0 opacity-100',
       )}
     >
-      <div className="inline-flex items-center rounded-full border border-[#d1e7dd]/50 bg-[#e8f5ee] p-[5px]">
+      <div
+        className="inline-flex items-center rounded-full p-[5px]"
+        style={{
+          background: 'rgba(255,255,255,0.95)',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.10), 0 0 0 0.5px rgba(0,0,0,0.06)',
+        }}
+      >
         {navItems.map(({ path, label, icon: Icon }) => (
           <button
             key={path}
             type="button"
             onClick={() => navigate(path)}
             className={cn(
-              'flex min-w-[44px] flex-col items-center gap-0.5 rounded-full px-[22px] py-[9px] transition-all duration-200',
+              'flex min-w-[44px] flex-col items-center gap-0.5 rounded-full px-[28px] py-[9px] transition-all duration-200',
               isActive(path)
                 ? 'bg-primary text-white'
                 : 'text-slate-400',
