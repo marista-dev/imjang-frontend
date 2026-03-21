@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ChevronLeft, ImagePlus, X, Check, MapPin } from 'lucide-react';
+import { ChevronLeft, ImagePlus, X, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
 import * as Switch from '@radix-ui/react-switch';
 import * as Tabs from '@radix-ui/react-tabs';
@@ -23,28 +23,6 @@ const PRICE_RATINGS = [
   { value: 'CHEAP', label: '저렴해요' },
   { value: 'REASONABLE', label: '적당해요' },
   { value: 'EXPENSIVE', label: '비싸요' },
-];
-
-const CHECK_ITEMS = [
-  { key: 'sunlight', label: '채광' },
-  { key: 'ventilation', label: '환기' },
-  { key: 'noise', label: '소음 없음' },
-  { key: 'waterPressure', label: '수압 양호' },
-  { key: 'parking', label: '주차 가능' },
-  { key: 'elevator', label: '엘리베이터' },
-  { key: 'delivery', label: '택배 수령' },
-  { key: 'security', label: '보안 양호' },
-];
-
-const SURROUNDINGS = [
-  { value: 'SUBWAY', label: '지하철' },
-  { value: 'BUS', label: '버스' },
-  { value: 'MART', label: '마트' },
-  { value: 'SCHOOL', label: '학교' },
-  { value: 'PARK', label: '공원' },
-  { value: 'CAFE', label: '카페' },
-  { value: 'HOSPITAL', label: '병원' },
-  { value: 'GYM', label: '헬스장' },
 ];
 
 const PARKING_OPTIONS = [
@@ -102,14 +80,18 @@ const EditImageSection = ({ propertyId, images, onImagesChange, onDirty }) => {
         <span className="text-xs text-slate-400">{images.length}/10장</span>
       </div>
       <div className="grid grid-cols-3 gap-2">
-        {images.map((img) => (
-          <div key={img.id} className="relative aspect-square overflow-hidden rounded-xl bg-slate-100">
+        {images.map((img, idx) => (
+          <div key={img.id ?? img.url ?? idx} className="relative aspect-square overflow-hidden rounded-xl bg-slate-100">
             <img src={img.url} alt="" loading="lazy" className="h-full w-full object-cover" />
-            {/* 삭제 버튼 임시 비활성화 — 백엔드 이미지 ID 반환 후 복원 */}
-            {/* <button type="button" onClick={() => handleDelete(img.id)}
-              className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/50 text-white">
-              <X size={14} />
-            </button> */}
+            {img.id && (
+              <button
+                type="button"
+                onClick={() => handleDelete(img.id)}
+                className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/50 text-white"
+              >
+                <X size={14} />
+              </button>
+            )}
           </div>
         ))}
         {images.length < 10 && (
@@ -155,7 +137,6 @@ const PropertyEditPage = () => {
   const [priceEvaluation, setPriceEvaluation] = useState('');
   const [parkingType, setParkingType] = useState('');
   const [maintenanceFee, setMaintenanceFee] = useState(0);
-  const [checkItems, setCheckItems] = useState({});
   const [surroundings, setSurroundings] = useState([]);
   const [moveInAvailable, setMoveInAvailable] = useState(false);
   const [revisitIntention, setRevisitIntention] = useState(false);
@@ -166,7 +147,9 @@ const PropertyEditPage = () => {
   // 기존 데이터 프리필
   useEffect(() => {
     if (!property) return;
-    setImages(property.images ?? []);
+    setImages((property.images ?? []).map((img) =>
+      typeof img === 'string' ? { id: null, url: img } : img,
+    ));
     setAddress(property.address ?? '');
     setAddressDetail(property.addressDetail ?? '');
     setPriceType(property.priceType ?? 'MONTHLY');
@@ -180,7 +163,6 @@ const PropertyEditPage = () => {
     setPriceEvaluation(property.evaluation?.priceEvaluation ?? property.priceEvaluation ?? '');
     setParkingType(property.parkingType ?? '');
     setMaintenanceFee(property.maintenanceFee ?? 0);
-    setCheckItems(property.checkItems ?? {});
     setSurroundings(property.environments ?? property.surroundings ?? []);
     setMoveInAvailable(property.evaluation?.moveInAvailable ?? property.moveInAvailable ?? false);
     setRevisitIntention(property.evaluation?.revisitIntention ?? property.revisitIntention ?? false);
@@ -229,7 +211,7 @@ const PropertyEditPage = () => {
     save({
       moveInAvailable,
       revisitIntention,
-      priceEvaluation: priceEvaluation === 'FAIR' ? 'REASONABLE' : priceEvaluation,
+      priceEvaluation: priceEvaluation === 'FAIR' ? 'REASONABLE' : (priceEvaluation || null),
       parkingType: parkingType || 'UNKNOWN',
       maintenanceFee: maintenanceFee ? Number(maintenanceFee) : null,
       environments: surroundings,
@@ -239,11 +221,6 @@ const PropertyEditPage = () => {
 
   const numInput = (setter) => (e) => {
     setter(e.target.value.replace(/[^0-9.]/g, ''));
-    markDirty();
-  };
-
-  const toggleCheck = (key) => {
-    setCheckItems((prev) => ({ ...prev, [key]: !prev[key] }));
     markDirty();
   };
 
@@ -416,45 +393,6 @@ const PropertyEditPage = () => {
         {/* ── 매물 환경 ─────────────────────────────────────────── */}
         <Section>
           <SectionTitle>매물 환경</SectionTitle>
-
-          <div className="grid grid-cols-2 gap-2">
-            {CHECK_ITEMS.map(({ key, label }) => (
-              <button key={key} type="button" onClick={() => toggleCheck(key)}
-                className={cn(
-                  'flex items-center gap-2 rounded-xl border px-3 py-2.5 text-sm transition-all active:scale-[0.97]',
-                  checkItems[key]
-                    ? 'border-primary bg-primary-50 text-primary'
-                    : 'border-slate-200 bg-white text-slate-600',
-                )}
-              >
-                <div className={cn(
-                  'flex h-5 w-5 items-center justify-center rounded-full border',
-                  checkItems[key] ? 'border-primary bg-primary' : 'border-slate-300 bg-white',
-                )}>
-                  {checkItems[key] && <Check size={12} className="text-white" />}
-                </div>
-                {label}
-              </button>
-            ))}
-          </div>
-
-          <div>
-            <p className="mb-2 text-sm font-medium text-slate-700">주변 시설</p>
-            <div className="flex flex-wrap gap-2">
-              {SURROUNDINGS.map(({ value, label }) => (
-                <button key={value} type="button" onClick={() => toggleSurrounding(value)}
-                  className={cn(
-                    'rounded-full border px-3 py-1.5 text-xs font-medium transition-all active:scale-[0.97]',
-                    surroundings.includes(value)
-                      ? 'border-primary bg-primary-50 text-primary'
-                      : 'border-slate-200 bg-white text-slate-500',
-                  )}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-          </div>
 
           <div>
             <p className="mb-2 text-sm font-medium text-slate-700">주차</p>
