@@ -85,20 +85,30 @@ maintenanceFee     ❌ 보내지 않음 (백엔드는 필요)
 - 가격/면적/층수 정상 표시
 - Vaul Drawer 접근성 경고 지속됨 (C-001과 동일 — 전체 앱에서 DialogTitle 누락)
 
-## C-006: [전체] Vaul Drawer 접근성 경고 (DialogTitle 누락)
+## C-006: 매물 등록 페이지 (PropertyNewPage)
+- **상태**: 정상
+- 빠른 기록 폼 UI 정상 (위치정보 + 필수 체크리스트)
+- 주소 검색 / 현재 위치 / 지도 선택 버튼 정상 표시
+- 별점, 가격평가, 입주가능, 재방문의사 폼 정상
+- 저장 시 POST /properties 200 성공
+- 등록 후 `/timeline`으로 정상 이동 (ID undefined 이슈 해결됨)
+- "매물이 등록되었어요!" 토스트 정상
+- location prefetch API 200 성공
+
+## C-007: [전체] Vaul Drawer 접근성 경고 (DialogTitle 누락)
 - **상태**: 경고 (Warning)
 - **증상**: 모든 Drawer에서 `DialogContent requires DialogTitle` 콘솔 에러
 - **수정**: 모든 `Drawer.Content`에 `<VisuallyHidden><Drawer.Title>...</Drawer.Title></VisuallyHidden>` 추가
 - **파일**: Drawer 사용하는 모든 컴포넌트 (HomePage, MapPage, PropertyDetailPage 등)
 
-## C-007: 지도 페이지 마커 없음
+## C-008: 지도 페이지 마커 없음
 - **상태**: 데이터 문제 (백엔드)
 - **증상**: 지도 API 200 성공이지만 markers가 빈 배열 `{"markers":[]}`
 - **원인**: 매물에 위도/경도가 저장되지 않음
 - **프론트**: 지도 로드/검색/필터 기능 정상. API 파라미터 정상 (southWestLat 등)
 - **근본 원인**: 매물 생성 시 latitude/longitude가 백엔드에 저장되는지 확인 필요 (B-003 참조)
 
-## C-008: 수정 페이지 사진 삭제 400 에러
+## C-009: 수정 페이지 사진 삭제 400 에러
 - **상태**: 삭제 실패 (400 Bad Request)
 - **원인**: 백엔드 detail API가 이미지를 **문자열 배열**로만 반환: `["/temp-images/..."]`
   프론트엔드 `normalizeProperty()`가 이걸 `[{id: 0, url: "..."}]`로 변환 (배열 인덱스를 id로 사용)
