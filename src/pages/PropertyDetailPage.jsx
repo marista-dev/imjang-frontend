@@ -80,13 +80,6 @@ const CATEGORY_ICONS = {
   PM9: Pill,
 };
 
-const CATEGORY_COLORS = {
-  CS2: { bg: 'bg-emerald-50', text: 'text-emerald-600' },
-  MT1: { bg: 'bg-orange-50', text: 'text-orange-600' },
-  BK9: { bg: 'bg-blue-50', text: 'text-blue-600' },
-  HP8: { bg: 'bg-red-50', text: 'text-red-600' },
-  PM9: { bg: 'bg-purple-50', text: 'text-purple-600' },
-};
 
 // ─── 유틸 ────────────────────────────────────────────────────────────────────
 
@@ -376,12 +369,11 @@ const PropertyDetailPage = () => {
             <div className="divide-y divide-slate-100">
               {amenities.map((a) => {
                 const Icon = CATEGORY_ICONS[a.categoryCode] ?? Building2;
-                const colors = CATEGORY_COLORS[a.categoryCode] ?? { bg: 'bg-slate-100', text: 'text-slate-500' };
                 const walkMin = getWalkTime(a.nearestDistance);
                 return (
                   <div key={a.categoryCode} className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
-                    <div className={cn('flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full', colors.bg)}>
-                      <Icon size={17} className={colors.text} />
+                    <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-slate-100">
+                      <Icon size={17} className="text-slate-600" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
@@ -402,12 +394,12 @@ const PropertyDetailPage = () => {
         <Section icon={ClipboardCheck} title="체크리스트 검토" iconColor="text-amber-500">
           <div className="space-y-1">
             {/* 즉시 입주 */}
-            <div className="flex items-center gap-2.5 py-2">
-              <div className={cn('flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full',
+            <div className="flex items-center gap-2.5 py-2.5">
+              <div className={cn('flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full',
                 property.canMoveIn ? 'bg-emerald-100' : 'bg-red-100')}>
                 {property.canMoveIn
-                  ? <Check size={13} className="text-emerald-600" />
-                  : <XIcon size={13} className="text-red-500" />}
+                  ? <Check size={14} className="text-emerald-600" />
+                  : <XIcon size={14} className="text-red-500" />}
               </div>
               <span className="text-sm text-slate-700">
                 즉시 입주 {property.canMoveIn ? '가능' : '불가'}
@@ -415,12 +407,12 @@ const PropertyDetailPage = () => {
             </div>
 
             {/* 재방문 의사 */}
-            <div className="flex items-center gap-2.5 py-2">
-              <div className={cn('flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full',
+            <div className="flex items-center gap-2.5 py-2.5">
+              <div className={cn('flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full',
                 property.revisitWanted ? 'bg-emerald-100' : 'bg-red-100')}>
                 {property.revisitWanted
-                  ? <Check size={13} className="text-emerald-600" />
-                  : <XIcon size={13} className="text-red-500" />}
+                  ? <Check size={14} className="text-emerald-600" />
+                  : <XIcon size={14} className="text-red-500" />}
               </div>
               <span className="text-sm text-slate-700">
                 재방문 의사 {property.revisitWanted ? '있음' : '없음'}
@@ -429,9 +421,9 @@ const PropertyDetailPage = () => {
 
             {/* 가격 평가 */}
             {property.priceRating && (
-              <div className="flex items-center gap-2.5 py-2">
-                <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-amber-100">
-                  <Tag size={13} className="text-amber-600" />
+              <div className="flex items-center gap-2.5 py-2.5">
+                <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-slate-100">
+                  <Tag size={14} className="text-slate-600" />
                 </div>
                 <span className="text-sm text-slate-700">
                   가격 {PRICE_RATING_LABELS[property.priceRating]}
@@ -441,10 +433,14 @@ const PropertyDetailPage = () => {
 
             {/* 주차 */}
             {property.parkingType && PARKING_LABELS[property.parkingType] && (
-              <div className="flex items-center gap-2.5 py-2">
-                <div className={cn('flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full',
-                  property.parkingType === 'AVAILABLE' ? 'bg-emerald-100' : 'bg-slate-100')}>
-                  <Car size={13} className={property.parkingType === 'AVAILABLE' ? 'text-emerald-600' : 'text-slate-500'} />
+              <div className="flex items-center gap-2.5 py-2.5">
+                <div className={cn('flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full',
+                  property.parkingType === 'AVAILABLE' ? 'bg-emerald-100'
+                  : property.parkingType === 'NOT_AVAILABLE' ? 'bg-red-100'
+                  : 'bg-slate-100')}>
+                  {property.parkingType === 'NOT_AVAILABLE'
+                    ? <XIcon size={14} className="text-red-500" />
+                    : <Car size={14} className={property.parkingType === 'AVAILABLE' ? 'text-emerald-600' : 'text-slate-600'} />}
                 </div>
                 <span className="text-sm text-slate-700">
                   주차 {PARKING_LABELS[property.parkingType]}
@@ -454,9 +450,9 @@ const PropertyDetailPage = () => {
 
             {/* 관리비 */}
             {property.maintenanceFee != null && (
-              <div className="flex items-center gap-2.5 py-2">
-                <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-slate-100">
-                  <Wallet size={13} className="text-slate-500" />
+              <div className="flex items-center gap-2.5 py-2.5">
+                <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-slate-100">
+                  <Wallet size={14} className="text-slate-600" />
                 </div>
                 <span className="text-sm text-slate-700">
                   관리비 {property.maintenanceFee > 0 ? `${property.maintenanceFee}만원` : '없음'}
