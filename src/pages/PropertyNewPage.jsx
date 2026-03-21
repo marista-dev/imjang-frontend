@@ -266,15 +266,18 @@ const PropertyNewPage = () => {
 
   const set = (key, val) => setForm((prev) => ({ ...prev, [key]: val }));
 
-  // 필수 항목 완료 개수 (5개)
+  // 필수 항목 완료 개수 (8개)
   const requiredDone = [
     !!form.address,
     form.rating > 0,
     !!form.priceEvaluation,
     form.moveInAvailable !== null,
     form.revisitIntention !== null,
+    !!form.area,
+    !!form.currentFloor,
+    !!form.totalFloors,
   ].filter(Boolean).length;
-  const allRequiredDone = requiredDone === 5;
+  const allRequiredDone = requiredDone === 8;
 
   // 위치 확정 시 prefetch (fire-and-forget)
   const firePrefetch = (address, latitude, longitude) => {
@@ -385,6 +388,9 @@ const PropertyNewPage = () => {
   const scrollToFirstMissing = () => {
     const checks = [
       { done: !!form.address, id: 'section-location' },
+      { done: !!form.area, id: 'section-info' },
+      { done: !!form.currentFloor, id: 'section-info' },
+      { done: !!form.totalFloors, id: 'section-info' },
       { done: form.rating > 0, id: 'section-checklist' },
       { done: !!form.priceEvaluation, id: 'section-checklist' },
       { done: form.moveInAvailable !== null, id: 'section-checklist' },
@@ -430,7 +436,7 @@ const PropertyNewPage = () => {
           <div className="px-5 pb-3">
             <div className="mb-1.5 flex items-center justify-between">
               <span className="text-base font-semibold text-slate-700">필수 항목</span>
-              <span className="text-base font-bold text-primary">{requiredDone}/5</span>
+              <span className="text-base font-bold text-primary">{requiredDone}/8</span>
             </div>
             <div className="h-3 w-full overflow-hidden rounded-full bg-slate-200">
               <div
@@ -499,7 +505,7 @@ const PropertyNewPage = () => {
           </Section>
 
           {/* ── 섹션 2: 매물 정보 ─────────────────────────────────── */}
-          <Section>
+          <Section id="section-info">
             <SectionTitle>매물 정보</SectionTitle>
 
             {/* 거래 유형 */}
@@ -542,7 +548,7 @@ const PropertyNewPage = () => {
 
             {/* 평수 */}
             <div>
-              <p className="mb-2 text-base font-medium text-slate-700">평수 (㎡)</p>
+              <p className="mb-2 text-base font-medium text-slate-700">평수 (㎡) <span className="text-danger">*</span></p>
               <input type="text" inputMode="decimal" placeholder="예: 33"
                 value={form.area} onChange={numInput('area')}
                 className="h-12 w-full rounded-xl border border-slate-200 px-4 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400" />
@@ -593,7 +599,7 @@ const PropertyNewPage = () => {
 
             {/* 층수 */}
             <div>
-              <p className="mb-2 text-base font-medium text-slate-700">층수</p>
+              <p className="mb-2 text-base font-medium text-slate-700">층수 <span className="text-danger">*</span></p>
               <div className="flex items-center gap-2">
                 <input type="text" inputMode="numeric" placeholder="현재층"
                   value={form.currentFloor} onChange={numInput('currentFloor')}
@@ -765,7 +771,7 @@ const PropertyNewPage = () => {
         <div className="fixed bottom-0 left-0 right-0 z-20 mx-auto w-full max-w-app border-t border-slate-100 bg-white/95 px-5 pb-safe pt-3 backdrop-blur-sm">
           {!allRequiredDone && (
             <p className="mb-2 text-center text-base text-slate-400">
-              필수 항목 {5 - requiredDone}개를 더 입력해주세요
+              필수 항목 {8 - requiredDone}개를 더 입력해주세요
             </p>
           )}
           <button
