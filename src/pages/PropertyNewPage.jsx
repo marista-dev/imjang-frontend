@@ -782,7 +782,7 @@ const PropertyNewPage = () => {
         </div>
 
         {/* ── 하단 고정 버튼 ───────────────────────────────────── */}
-        <div className="fixed bottom-0 left-1/2 z-20 w-full max-w-app -translate-x-1/2 border-t border-slate-100 bg-white/95 px-5 pb-safe pt-3 backdrop-blur-sm">
+        <div className="fixed bottom-0 left-0 right-0 z-20 mx-auto w-full max-w-app border-t border-slate-100 bg-white/95 px-5 pb-safe pt-3 backdrop-blur-sm">
           {!allRequiredDone && (
             <p className="mb-2 text-center text-xs text-slate-400">
               필수 항목 {5 - requiredDone}개를 더 입력해주세요
