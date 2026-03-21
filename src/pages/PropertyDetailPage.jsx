@@ -175,10 +175,18 @@ const HeroGallery = ({ images, property }) => {
         </div>
       </div>
 
-      {/* 페이지 인디케이터 */}
+      {/* 페이지 인디케이터 — 하단 중앙 dot */}
       {hasImages && images.length > 1 && (
-        <div className="absolute right-3 top-14 rounded-full bg-black/40 px-2.5 py-1 text-xs text-white">
-          {currentIndex + 1} / {images.length}
+        <div className="absolute bottom-20 left-1/2 z-10 -translate-x-1/2 flex items-center gap-1.5">
+          {images.map((_, i) => (
+            <span
+              key={i}
+              className={cn(
+                'h-1.5 rounded-full transition-all',
+                i === currentIndex ? 'w-4 bg-white' : 'w-1.5 bg-white/50',
+              )}
+            />
+          ))}
         </div>
       )}
     </div>
@@ -205,6 +213,7 @@ const PropertyDetailPage = () => {
   const queryClient = useQueryClient();
   const [menuOpen, setMenuOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [photoViewerIdx, setPhotoViewerIdx] = useState(null);
 
   const { data: property, isLoading, isError } = useQuery({
     queryKey: ['property-detail', id],
@@ -266,7 +275,7 @@ const PropertyDetailPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white pb-24">
+    <div className="min-h-screen bg-white pb-24 animate-fade-in-up">
       {/* 헤더 */}
       <div className="absolute left-0 right-0 top-0 z-10 flex items-center justify-between px-4 py-3">
         <button
@@ -276,13 +285,22 @@ const PropertyDetailPage = () => {
         >
           <ChevronLeft size={22} className="text-slate-700" />
         </button>
-        <button
-          type="button"
-          onClick={() => setMenuOpen(true)}
-          className="flex h-10 w-10 items-center justify-center rounded-full bg-white/80 backdrop-blur-sm shadow-sm active:scale-95 transition-all"
-        >
-          <MoreVertical size={22} className="text-slate-700" />
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleShare}
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-white/80 backdrop-blur-sm shadow-sm active:scale-95 transition-all"
+          >
+            <Share2 size={18} className="text-slate-700" />
+          </button>
+          <button
+            type="button"
+            onClick={() => setMenuOpen(true)}
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-white/80 backdrop-blur-sm shadow-sm active:scale-95 transition-all"
+          >
+            <MoreVertical size={22} className="text-slate-700" />
+          </button>
+        </div>
       </div>
 
       {/* 히어로 이미지 */}
@@ -291,15 +309,15 @@ const PropertyDetailPage = () => {
       {/* 본문 */}
       <div className="px-5 pt-4">
 
-        {/* 공유하기 */}
-        <button
-          type="button"
-          onClick={handleShare}
-          className="flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 text-sm text-slate-500 active:bg-slate-50 transition-colors"
-        >
-          <Share2 size={14} />
-          공유하기
-        </button>
+        {/* 방문일 */}
+        {property.visitedAt && (
+          <div className="mb-4 flex items-center gap-1.5 rounded-xl bg-slate-50 px-3 py-2">
+            <CalendarDays size={14} className="text-slate-400" />
+            <p className="text-sm text-slate-500">
+              {formatCreatedAt(property.visitedAt)} 방문
+            </p>
+          </div>
+        )}
 
         {/* 교통 정보 */}
         {locationInfo && (
@@ -487,26 +505,26 @@ const PropertyDetailPage = () => {
           <Section icon={null} title={`사진 ${property.images.length}장`}>
             <div className="grid grid-cols-3 gap-1.5">
               {property.images.map((img, i) => (
-                <div key={img.id ?? i} className="aspect-square overflow-hidden rounded-xl bg-slate-100">
+                <button
+                  key={img.id ?? i}
+                  type="button"
+                  onClick={() => setPhotoViewerIdx(i)}
+                  className="aspect-square overflow-hidden rounded-xl bg-slate-100"
+                >
                   <img
                     src={img.url}
                     alt={`사진 ${i + 1}`}
                     loading="lazy"
                     className="h-full w-full object-cover"
                   />
-                </div>
+                </button>
               ))}
             </div>
           </Section>
         )}
 
-        {/* 방문일 */}
-        <div className="border-t border-slate-100 mt-5 pt-4 pb-2 flex items-center justify-center gap-1.5">
-          <CalendarDays size={13} className="text-slate-300" />
-          <p className="text-xs text-slate-400">
-            {formatCreatedAt(property.visitedAt)}
-          </p>
-        </div>
+        {/* 하단 여백 */}
+        <div className="mt-5 pt-2" />
       </div>
 
       {/* 액션 Drawer */}
@@ -545,6 +563,45 @@ const PropertyDetailPage = () => {
         onConfirm={deleteProperty}
         onCancel={() => setDeleteOpen(false)}
       />
+
+      {/* 사진 전체화면 뷰어 */}
+      {photoViewerIdx !== null && property.images?.length > 0 && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black">
+          <button
+            type="button"
+            onClick={() => setPhotoViewerIdx(null)}
+            className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-white"
+          >
+            <XIcon size={22} />
+          </button>
+          <p className="absolute top-4 left-1/2 z-10 -translate-x-1/2 text-sm text-white/70">
+            {photoViewerIdx + 1} / {property.images.length}
+          </p>
+          <img
+            src={property.images[photoViewerIdx].url}
+            alt={`사진 ${photoViewerIdx + 1}`}
+            className="max-h-full max-w-full object-contain"
+          />
+          {photoViewerIdx > 0 && (
+            <button
+              type="button"
+              onClick={() => setPhotoViewerIdx((i) => i - 1)}
+              className="absolute left-3 top-1/2 z-10 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-white"
+            >
+              <ChevronLeft size={24} />
+            </button>
+          )}
+          {photoViewerIdx < property.images.length - 1 && (
+            <button
+              type="button"
+              onClick={() => setPhotoViewerIdx((i) => i + 1)}
+              className="absolute right-3 top-1/2 z-10 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-white rotate-180"
+            >
+              <ChevronLeft size={24} />
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 };

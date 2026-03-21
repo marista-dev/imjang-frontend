@@ -52,7 +52,7 @@ const BottomNav = () => {
             className={({ isActive }) =>
               cn(
                 'relative flex min-h-[44px] min-w-[44px] flex-col items-center justify-center gap-0.5',
-                'text-xs transition-colors',
+                'text-[11px] transition-colors',
                 isActive ? 'font-semibold text-primary' : 'text-slate-400',
               )
             }

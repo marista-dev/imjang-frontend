@@ -87,6 +87,36 @@
 }
 
 @layer utilities {
+  /* 레인지 슬라이더 모바일 최적화 */
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 6px;
+    border-radius: 9999px;
+    background: #E2E8F0;
+    outline: none;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #059669;
+    cursor: pointer;
+    border: 3px solid white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #059669;
+    cursor: pointer;
+    border: 3px solid white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  }
+
   /* 스크롤바 숨기기 (모바일 앱 느낌) */
   .scrollbar-hide {
     -ms-overflow-style: none;

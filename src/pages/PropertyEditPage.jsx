@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useState, useEffect, useCallback } from 'react';
+import { useParams, useNavigate, useBlocker } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ChevronLeft, ImagePlus, X, Check, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
@@ -9,7 +9,8 @@ import { propertyApi } from '@/api/property';
 import { imageApi } from '@/api/image';
 import { RatingStars } from '@/components/RatingStars';
 import { Spinner } from '@/components/Spinner';
-import { cn } from '@/lib/utils';
+import { cn, formatPrice } from '@/lib/utils';
+import { Section, SectionTitle, ChipButton, PriceInputWithHint } from '@/components/FormSection';
 
 const PRICE_TYPES = [
   { value: 'MONTHLY', label: '월세' },
@@ -18,9 +19,9 @@ const PRICE_TYPES = [
 ];
 
 const PRICE_RATINGS = [
-  { value: 'CHEAP', label: '저렴해요', emoji: '😊' },
-  { value: 'REASONABLE', label: '적당해요', emoji: '😐' },
-  { value: 'EXPENSIVE', label: '비싸요', emoji: '😮' },
+  { value: 'CHEAP', label: '저렴해요' },
+  { value: 'REASONABLE', label: '적당해요' },
+  { value: 'EXPENSIVE', label: '비싸요' },
 ];
 
 const CHECK_ITEMS = [
@@ -55,7 +56,7 @@ const openAddressSearch = (onSelect) => {
   }).open();
 };
 
-const EditImageSection = ({ propertyId, images, onImagesChange }) => {
+const EditImageSection = ({ propertyId, images, onImagesChange, onDirty }) => {
   const [uploading, setUploading] = useState(false);
 
   const handleAdd = async (files) => {
@@ -69,6 +70,7 @@ const EditImageSection = ({ propertyId, images, onImagesChange }) => {
       try {
         const res = await imageApi.addToProperty(propertyId, file);
         onImagesChange((prev) => [...prev, { id: res.data.imageId, url: res.data.thumbnailUrl }]);
+        onDirty?.();
       } catch {
         toast.error('이미지 업로드에 실패했어요.');
       }
@@ -80,6 +82,7 @@ const EditImageSection = ({ propertyId, images, onImagesChange }) => {
     try {
       await imageApi.deleteFromProperty(propertyId, imageId);
       onImagesChange((prev) => prev.filter((img) => img.id !== imageId));
+      onDirty?.();
     } catch {
       toast.error('이미지 삭제에 실패했어요.');
     }
@@ -87,8 +90,11 @@ const EditImageSection = ({ propertyId, images, onImagesChange }) => {
 
   return (
     <div>
-      <p className="mb-2 text-sm font-semibold text-slate-700">사진 ({images.length}/10)</p>
-      <div className="grid grid-cols-4 gap-2">
+      <div className="flex items-center justify-between mb-2">
+        <SectionTitle>사진</SectionTitle>
+        <span className="text-xs text-slate-400">{images.length}/10장</span>
+      </div>
+      <div className="grid grid-cols-3 gap-2">
         {images.map((img) => (
           <div key={img.id} className="relative aspect-square overflow-hidden rounded-xl bg-slate-100">
             <img src={img.url} alt="" loading="lazy" className="h-full w-full object-cover" />
@@ -147,6 +153,7 @@ const PropertyEditPage = () => {
   const [moveInAvailable, setMoveInAvailable] = useState(false);
   const [revisitIntention, setRevisitIntention] = useState(false);
   const [memo, setMemo] = useState('');
+  const [isDirty, setIsDirty] = useState(false);
 
   // 기존 데이터 프리필
   useEffect(() => {
@@ -170,9 +177,45 @@ const PropertyEditPage = () => {
     setMemo(property.memo ?? '');
   }, [property]);
 
+  // 비저장 변경사항 경고: 브라우저 탭 닫기/새로고침
+  useEffect(() => {
+    if (!isDirty) return;
+    const handler = (e) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [isDirty]);
+
+  // 비저장 변경사항 경고: 앱 내 라우트 이동 (뒤로가기, 링크 등)
+  const blocker = useBlocker(
+    useCallback(({ currentLocation, nextLocation }) =>
+      isDirty && currentLocation.pathname !== nextLocation.pathname,
+    [isDirty]),
+  );
+
+  useEffect(() => {
+    if (blocker.state === 'blocked') {
+      const confirmed = window.confirm('수정한 내용이 저장되지 않았어요. 정말 나가시겠어요?');
+      if (confirmed) {
+        blocker.proceed();
+      } else {
+        blocker.reset();
+      }
+    }
+  }, [blocker]);
+
+  const markDirty = () => { if (!isDirty) setIsDirty(true); };
+
+  // dirty 상태를 자동으로 마킹하는 래퍼 헬퍼
+  const withDirty = (setter) => (value) => { setter(value); markDirty(); };
+  const withDirtyEvent = (setter) => (e) => { setter(e?.target ? e.target.value : e); markDirty(); };
+
   const { mutate: save, isPending } = useMutation({
     mutationFn: (data) => propertyApi.update(id, data),
     onSuccess: () => {
+      setIsDirty(false);
       toast.success('수정이 완료되었어요.');
       queryClient.invalidateQueries({ queryKey: ['property-detail', id] });
       queryClient.invalidateQueries({ queryKey: ['properties-recent'] });
@@ -207,15 +250,30 @@ const PropertyEditPage = () => {
     });
   };
 
-  const numInput = (setter) => (e) => setter(e.target.value.replace(/[^0-9.]/g, ''));
+  const numInput = (setter) => (e) => {
+    setter(e.target.value.replace(/[^0-9.]/g, ''));
+    markDirty();
+  };
 
-  const toggleCheck = (key) =>
+  const toggleCheck = (key) => {
     setCheckItems((prev) => ({ ...prev, [key]: !prev[key] }));
+    markDirty();
+  };
 
-  const toggleSurrounding = (value) =>
+  const toggleSurrounding = (value) => {
     setSurroundings((prev) =>
-      prev.includes(value) ? prev.filter((s) => s !== value) : [...prev, value]
+      prev.includes(value) ? prev.filter((s) => s !== value) : [...prev, value],
     );
+    markDirty();
+  };
+
+  // 핸들러 별칭 (인라인 markDirty() 제거용)
+  const handleAddressDetail = withDirtyEvent(setAddressDetail);
+  const handlePriceType = withDirty(setPriceType);
+  const handleRating = withDirty(setRating);
+  const handleMoveIn = withDirty(setMoveInAvailable);
+  const handleRevisit = withDirty(setRevisitIntention);
+  const handleMemo = withDirtyEvent(setMemo);
 
   if (isLoading) {
     return (
@@ -226,132 +284,133 @@ const PropertyEditPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-slate-50 animate-fade-in-up">
       {/* 헤더 */}
-      <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-600 active:bg-slate-100"
-        >
-          <ChevronLeft size={24} />
-        </button>
-        <h1 className="text-base font-bold text-slate-800">매물 수정</h1>
-        <button
-          type="button"
-          onClick={handleSave}
-          disabled={isPending}
-          className="flex h-9 items-center rounded-xl bg-primary px-4 text-sm font-semibold text-white disabled:opacity-60 active:scale-[0.98]"
-        >
-          {isPending ? <Spinner size="sm" className="text-white" /> : '저장'}
-        </button>
-      </div>
-
-      {/* 폼 */}
-      <div className="space-y-6 px-5 py-6 pb-24">
-        {/* 사진 */}
-        <EditImageSection propertyId={id} images={images} onImagesChange={setImages} />
-
-        {/* 위치 */}
-        <div className="space-y-3">
-          <p className="text-sm font-semibold text-slate-700">위치</p>
+      <div className="sticky top-0 z-10 border-b border-slate-100 bg-white/95 px-5 py-4 backdrop-blur-sm">
+        <div className="flex items-center gap-3">
           <button
             type="button"
-            onClick={() => openAddressSearch(setAddress)}
+            onClick={() => navigate(-1)}
+            className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-600 active:bg-slate-100"
+          >
+            <ChevronLeft size={24} />
+          </button>
+          <h1 className="flex-1 text-base font-bold text-slate-800">매물 수정</h1>
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={isPending}
+            className="flex h-10 items-center rounded-xl bg-primary px-4 text-sm font-semibold text-white disabled:opacity-60 active:scale-[0.98]"
+          >
+            {isPending ? <Spinner size="sm" className="text-white" /> : '저장'}
+          </button>
+        </div>
+      </div>
+
+      {/* 폼 콘텐츠 — NewPage와 동일한 Section 카드 스타일 */}
+      <div className="space-y-3 px-5 pt-4 pb-24">
+        {/* ── 사진 ──────────────────────────────────────────────── */}
+        <Section>
+          <EditImageSection propertyId={id} images={images} onImagesChange={setImages} onDirty={markDirty} />
+        </Section>
+
+        {/* ── 위치 ──────────────────────────────────────────────── */}
+        <Section>
+          <SectionTitle>위치 정보</SectionTitle>
+          <button
+            type="button"
+            onClick={() => openAddressSearch((addr) => { setAddress(addr); markDirty(); })}
             className={cn(
-              'flex h-12 w-full items-center gap-2 rounded-xl border px-4 text-left text-base transition-all',
+              'flex w-full items-center gap-2 rounded-xl border px-4 py-3 text-left transition-all',
               address
                 ? 'border-primary bg-primary-50 text-slate-800'
-                : 'border-slate-200 bg-white text-slate-400',
+                : 'border-slate-200 bg-slate-50 text-slate-400',
             )}
           >
-            <MapPin size={18} className={address ? 'text-primary' : 'text-slate-400'} />
-            <span className="flex-1 truncate">{address || '주소 검색'}</span>
+            <MapPin size={16} className={address ? 'text-primary' : 'text-slate-400'} />
+            <span className="flex-1 truncate text-sm">{address || '주소를 검색해주세요'}</span>
+            {address && <Check size={16} className="text-primary" />}
           </button>
-          <input
-            type="text"
-            placeholder="상세 주소 (동/호수)"
-            value={addressDetail}
-            onChange={(e) => setAddressDetail(e.target.value)}
-            className="h-12 w-full rounded-xl border border-slate-200 px-4 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400"
-          />
-        </div>
+          {address && (
+            <input
+              type="text"
+              placeholder="동/호수 (예: 101호)"
+              value={addressDetail}
+              onChange={handleAddressDetail}
+              className="h-11 w-full rounded-xl border border-slate-200 px-4 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400"
+            />
+          )}
+        </Section>
 
-        {/* 가격 */}
-        <div className="space-y-3">
-          <p className="text-sm font-semibold text-slate-700">가격 정보</p>
-          <Tabs.Root value={priceType} onValueChange={setPriceType}>
-            <Tabs.List className="flex rounded-xl bg-slate-100 p-1">
-              {PRICE_TYPES.map(({ value, label }) => (
-                <Tabs.Trigger
-                  key={value}
-                  value={value}
-                  className={cn(
-                    'flex-1 rounded-lg py-2 text-sm font-semibold transition-all',
-                    priceType === value ? 'bg-white text-primary shadow-sm' : 'text-slate-500',
-                  )}
-                >
-                  {label}
-                </Tabs.Trigger>
-              ))}
-            </Tabs.List>
-          </Tabs.Root>
+        {/* ── 가격 정보 ─────────────────────────────────────────── */}
+        <Section>
+          <SectionTitle>가격 정보</SectionTitle>
 
-          {priceType === 'MONTHLY' && (
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="mb-1 block text-xs text-slate-500">보증금 (만원)</label>
-                <input type="text" inputMode="numeric" placeholder="1000" value={deposit} onChange={numInput(setDeposit)}
-                  className="h-12 w-full rounded-xl border border-slate-200 px-4 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400" />
+          <div>
+            <p className="mb-2 text-sm font-medium text-slate-700">유형</p>
+            <Tabs.Root value={priceType} onValueChange={handlePriceType}>
+              <Tabs.List className="flex rounded-xl bg-slate-100 p-1">
+                {PRICE_TYPES.map(({ value, label }) => (
+                  <Tabs.Trigger
+                    key={value}
+                    value={value}
+                    className={cn(
+                      'flex-1 rounded-lg py-2 text-sm font-semibold transition-all',
+                      priceType === value ? 'bg-white text-primary shadow-sm' : 'text-slate-500',
+                    )}
+                  >
+                    {label}
+                  </Tabs.Trigger>
+                ))}
+              </Tabs.List>
+            </Tabs.Root>
+          </div>
+
+          <div>
+            <p className="mb-2 text-sm font-medium text-slate-700">가격 (만원)</p>
+            {priceType === 'MONTHLY' && (
+              <div className="grid grid-cols-2 gap-2">
+                <PriceInputWithHint label="보증금" value={deposit} onChange={numInput(setDeposit)} placeholder="1000" />
+                <PriceInputWithHint label="월세" value={monthlyRent} onChange={numInput(setMonthlyRent)} placeholder="50" />
               </div>
-              <div>
-                <label className="mb-1 block text-xs text-slate-500">월세 (만원)</label>
-                <input type="text" inputMode="numeric" placeholder="50" value={monthlyRent} onChange={numInput(setMonthlyRent)}
-                  className="h-12 w-full rounded-xl border border-slate-200 px-4 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400" />
-              </div>
-            </div>
-          )}
-          {priceType === 'JEONSE' && (
-            <div>
-              <label className="mb-1 block text-xs text-slate-500">전세금 (만원)</label>
-              <input type="text" inputMode="numeric" placeholder="30000" value={deposit} onChange={numInput(setDeposit)}
-                className="h-12 w-full rounded-xl border border-slate-200 px-4 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400" />
-            </div>
-          )}
-          {priceType === 'SALE' && (
-            <div>
-              <label className="mb-1 block text-xs text-slate-500">매매가 (만원)</label>
-              <input type="text" inputMode="numeric" placeholder="80000" value={price} onChange={numInput(setPrice)}
-                className="h-12 w-full rounded-xl border border-slate-200 px-4 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400" />
-            </div>
-          )}
-        </div>
+            )}
+            {priceType === 'JEONSE' && (
+              <PriceInputWithHint label="전세금" value={deposit} onChange={numInput(setDeposit)} placeholder="30000" />
+            )}
+            {priceType === 'SALE' && (
+              <PriceInputWithHint label="매매가" value={price} onChange={numInput(setPrice)} placeholder="80000" />
+            )}
+          </div>
+        </Section>
 
-        {/* 기본 정보 */}
-        <div className="space-y-3">
-          <p className="text-sm font-semibold text-slate-700">기본 정보</p>
-          <div className="grid grid-cols-3 gap-3">
-            <div>
-              <label className="mb-1 block text-xs text-slate-500">면적(㎡)</label>
-              <input type="text" inputMode="decimal" placeholder="33" value={area} onChange={numInput(setArea)}
-                className="h-12 w-full rounded-xl border border-slate-200 px-4 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400" />
-            </div>
-            <div>
-              <label className="mb-1 block text-xs text-slate-500">층수</label>
-              <input type="text" inputMode="numeric" placeholder="3" value={currentFloor} onChange={numInput(setCurrentFloor)}
-                className="h-12 w-full rounded-xl border border-slate-200 px-4 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400" />
-            </div>
-            <div>
-              <label className="mb-1 block text-xs text-slate-500">전체 층</label>
-              <input type="text" inputMode="numeric" placeholder="10" value={totalFloors} onChange={numInput(setTotalFloors)}
-                className="h-12 w-full rounded-xl border border-slate-200 px-4 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400" />
+        {/* ── 기본 정보 ─────────────────────────────────────────── */}
+        <Section>
+          <SectionTitle>기본 정보</SectionTitle>
+
+          <div>
+            <p className="mb-2 text-sm font-medium text-slate-700">평수 (㎡)</p>
+            <input type="text" inputMode="decimal" placeholder="예: 33"
+              value={area} onChange={numInput(setArea)}
+              className="h-11 w-full rounded-xl border border-slate-200 px-4 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400" />
+          </div>
+
+          <div>
+            <p className="mb-2 text-sm font-medium text-slate-700">층수</p>
+            <div className="flex items-center gap-2">
+              <input type="text" inputMode="numeric" placeholder="현재층"
+                value={currentFloor} onChange={numInput(setCurrentFloor)}
+                className="h-11 w-full rounded-xl border border-slate-200 px-4 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400" />
+              <span className="text-slate-400">/</span>
+              <input type="text" inputMode="numeric" placeholder="전체층"
+                value={totalFloors} onChange={numInput(setTotalFloors)}
+                className="h-11 w-full rounded-xl border border-slate-200 px-4 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400" />
             </div>
           </div>
 
           <div>
-            <p className="mb-2 text-xs text-slate-500">전체 평가</p>
+            <p className="mb-2 text-sm font-medium text-slate-700">전체 만족도</p>
             <div className="flex items-center gap-3">
-              <RatingStars rating={rating} onChange={setRating} size="lg" />
+              <RatingStars rating={rating} onChange={handleRating} size="lg" />
               {rating > 0 && (
                 <span className="text-sm text-slate-500">
                   {['', '별로에요', '아쉬워요', '보통이에요', '좋아요', '최고에요'][rating]}
@@ -361,29 +420,26 @@ const PropertyEditPage = () => {
           </div>
 
           <div>
-            <p className="mb-2 text-xs text-slate-500">가격 평가</p>
+            <p className="mb-2 text-sm font-medium text-slate-700">가격 평가</p>
             <div className="flex gap-2">
-              {PRICE_RATINGS.map(({ value, label, emoji }) => (
-                <button key={value} type="button"
-                  onClick={() => setPriceEvaluation((prev) => (prev === value ? '' : value))}
-                  className={cn(
-                    'flex flex-1 flex-col items-center gap-1 rounded-xl border py-3 text-xs font-medium transition-all active:scale-[0.97]',
-                    priceEvaluation === value
-                      ? 'border-primary bg-primary-50 text-primary'
-                      : 'border-slate-200 bg-white text-slate-500',
-                  )}
+              {PRICE_RATINGS.map(({ value, label }) => (
+                <ChipButton
+                  key={value}
+                  active={priceEvaluation === value}
+                  onClick={() => { setPriceEvaluation((prev) => prev === value ? '' : value); markDirty(); }}
+                  className="flex-1"
                 >
-                  <span className="text-xl">{emoji}</span>
                   {label}
-                </button>
+                </ChipButton>
               ))}
             </div>
           </div>
-        </div>
+        </Section>
 
-        {/* 체크리스트 */}
-        <div className="space-y-3">
-          <p className="text-sm font-semibold text-slate-700">매물 환경</p>
+        {/* ── 매물 환경 ─────────────────────────────────────────── */}
+        <Section>
+          <SectionTitle>매물 환경</SectionTitle>
+
           <div className="grid grid-cols-2 gap-2">
             {CHECK_ITEMS.map(({ key, label }) => (
               <button key={key} type="button" onClick={() => toggleCheck(key)}
@@ -405,51 +461,57 @@ const PropertyEditPage = () => {
             ))}
           </div>
 
-          <p className="pt-1 text-sm font-semibold text-slate-700">주변 시설</p>
-          <div className="flex flex-wrap gap-2">
-            {SURROUNDINGS.map(({ value, label }) => (
-              <button key={value} type="button" onClick={() => toggleSurrounding(value)}
-                className={cn(
-                  'rounded-full border px-3 py-1.5 text-xs font-medium transition-all active:scale-[0.97]',
-                  surroundings.includes(value)
-                    ? 'border-primary bg-primary-50 text-primary'
-                    : 'border-slate-200 bg-white text-slate-500',
-                )}
-              >
-                {label}
-              </button>
-            ))}
+          <div>
+            <p className="mb-2 text-sm font-medium text-slate-700">주변 시설</p>
+            <div className="flex flex-wrap gap-2">
+              {SURROUNDINGS.map(({ value, label }) => (
+                <button key={value} type="button" onClick={() => toggleSurrounding(value)}
+                  className={cn(
+                    'rounded-full border px-3 py-1.5 text-xs font-medium transition-all active:scale-[0.97]',
+                    surroundings.includes(value)
+                      ? 'border-primary bg-primary-50 text-primary'
+                      : 'border-slate-200 bg-white text-slate-500',
+                  )}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
 
-          <div className="space-y-3 pt-1">
+          <div className="space-y-3">
             <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3">
               <p className="text-sm font-medium text-slate-800">즉시 입주 가능</p>
-              <Switch.Root checked={moveInAvailable} onCheckedChange={setMoveInAvailable}
+              <Switch.Root checked={moveInAvailable} onCheckedChange={handleMoveIn}
                 className={cn('relative h-6 w-11 rounded-full transition-colors', moveInAvailable ? 'bg-primary' : 'bg-slate-200')}>
                 <Switch.Thumb className="block h-5 w-5 translate-x-0.5 rounded-full bg-white shadow transition-transform data-[state=checked]:translate-x-[22px]" />
               </Switch.Root>
             </div>
             <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3">
               <p className="text-sm font-medium text-slate-800">재방문 의향 있음</p>
-              <Switch.Root checked={revisitIntention} onCheckedChange={setRevisitIntention}
+              <Switch.Root checked={revisitIntention} onCheckedChange={handleRevisit}
                 className={cn('relative h-6 w-11 rounded-full transition-colors', revisitIntention ? 'bg-primary' : 'bg-slate-200')}>
                 <Switch.Thumb className="block h-5 w-5 translate-x-0.5 rounded-full bg-white shadow transition-transform data-[state=checked]:translate-x-[22px]" />
               </Switch.Root>
             </div>
           </div>
-        </div>
+        </Section>
 
-        {/* 메모 */}
-        <div>
-          <p className="mb-2 text-sm font-semibold text-slate-700">메모</p>
-          <textarea
-            placeholder="임장 중 느낀 점을 자유롭게 기록하세요..."
-            value={memo}
-            onChange={(e) => setMemo(e.target.value)}
-            rows={6}
-            className="w-full resize-none rounded-xl border border-slate-200 px-4 py-3 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400"
-          />
-        </div>
+        {/* ── 메모 ──────────────────────────────────────────────── */}
+        <Section>
+          <SectionTitle>메모</SectionTitle>
+          <div>
+            <textarea
+              placeholder="임장 중 느낀 점을 자유롭게 기록하세요..."
+              value={memo}
+              maxLength={500}
+              onChange={handleMemo}
+              rows={4}
+              className="w-full resize-none rounded-xl border border-slate-200 px-4 py-3 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400"
+            />
+            <p className="mt-1 text-right text-xs text-slate-400">{memo.length}/500</p>
+          </div>
+        </Section>
       </div>
     </div>
   );

@@ -3,6 +3,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useNavigate, Link } from 'react-router-dom';
 import { Eye, EyeOff, Home } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { authApi } from '@/api/auth';
 import { useAuthStore } from '@/store/useAuthStore';
 import { Spinner } from '@/components/Spinner';
@@ -35,7 +36,7 @@ const LoginPage = () => {
   const onSubmit = (data) => mutate(data);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-5">
+    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-5 animate-fade-in-up">
       <div className="w-full max-w-sm">
         {/* 로고 */}
         <div className="mb-8 text-center">
@@ -98,6 +99,17 @@ const LoginPage = () => {
               {errors.password && (
                 <p className="mt-1 text-xs text-danger">{errors.password.message}</p>
               )}
+            </div>
+
+            {/* 비밀번호 찾기 */}
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={() => toast.info('비밀번호 재설정 기능은 준비 중이에요.')}
+                className="text-xs text-slate-400"
+              >
+                비밀번호를 잊으셨나요?
+              </button>
             </div>
 
             {/* 서버 에러 */}

@@ -1,6 +1,6 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { Plus, BookOpen } from 'lucide-react';
+import { Plus, Clock } from 'lucide-react';
 import { propertyApi } from '@/api/property';
 import { PropertyCard } from '@/components/PropertyCard';
 import { Spinner } from '@/components/Spinner';
@@ -55,7 +55,7 @@ const TimelinePage = () => {
   const isEmpty = grouped.every((g) => (g.properties ?? []).length === 0);
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-24">
+    <div className="min-h-screen bg-slate-50 pb-24 animate-fade-in-up">
       {/* 헤더 */}
       <div className="sticky top-0 z-10 border-b border-slate-100 bg-white/95 px-5 py-4 backdrop-blur-sm">
         <div className="flex items-center justify-between">
@@ -81,10 +81,10 @@ const TimelinePage = () => {
         ) : grouped.length === 0 || isEmpty ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100">
-              <BookOpen size={28} className="text-slate-400" />
+              <Clock size={28} className="text-slate-400" />
             </div>
-            <p className="text-sm font-medium text-slate-600">아직 기록한 매물이 없어요</p>
-            <p className="mt-1 text-xs text-slate-400">임장 후 첫 기록을 남겨보세요!</p>
+            <p className="text-sm font-medium text-slate-600">타임라인이 비어있어요</p>
+            <p className="mt-1 text-xs text-slate-400">매물을 기록하면 날짜별로 정리돼요!</p>
             <button
               type="button"
               onClick={() => navigate('/properties/new')}
@@ -96,8 +96,13 @@ const TimelinePage = () => {
           </div>
         ) : (
           <div className="space-y-6">
-            {grouped.map(({ date, properties }) => (
-              <div key={date}>
+            {grouped.map(({ date, properties }, groupIdx) => (
+              <div key={date} className="relative pl-6">
+                {/* 타임라인 수직 라인 */}
+                <div className="absolute left-[7px] top-3 bottom-0 w-px bg-slate-200" />
+                {/* 타임라인 dot */}
+                <div className="absolute left-0 top-[7px] h-[15px] w-[15px] rounded-full border-2 border-primary bg-white" />
+
                 <div className="mb-2 flex items-center gap-2">
                   <span className="text-sm font-semibold text-slate-700">
                     {formatGroupDate(date)}
@@ -105,8 +110,10 @@ const TimelinePage = () => {
                   <span className="text-xs text-slate-400">{(properties ?? []).length}개</span>
                 </div>
                 <div className="space-y-3">
-                  {(properties ?? []).map((property) => (
-                    <PropertyCard key={property.id} property={normalizeProperty(property)} />
+                  {(properties ?? []).map((property, i) => (
+                    <div key={property.id} className={`stagger-${Math.min(i + 1, 5)}`}>
+                      <PropertyCard property={normalizeProperty(property)} />
+                    </div>
                   ))}
                 </div>
               </div>
