@@ -32,9 +32,9 @@ const BottomNav = () => {
   return (
     <nav
       className={cn(
-        'fixed bottom-3 left-0 right-0 z-50 flex items-center justify-center gap-1.5 pb-safe',
+        'fixed bottom-0 left-0 right-0 z-50 flex items-center justify-center gap-1.5 pb-safe',
         'transition-all duration-300 ease-out',
-        isHidden ? 'translate-y-[calc(100%+32px)] opacity-0' : 'translate-y-0 opacity-100',
+        isHidden ? 'translate-y-[calc(100%+24px)] opacity-0' : 'translate-y-0 opacity-100',
       )}
     >
       {/* 탭 pill */}
