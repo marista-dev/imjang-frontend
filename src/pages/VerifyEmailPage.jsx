@@ -103,7 +103,7 @@ const VerifyEmailPage = () => {
   const otpCode = otp.join('');
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-5">
+    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-5 animate-fade-in-up">
       <div className="w-full max-w-sm">
         {/* 카드 */}
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">

@@ -11,10 +11,19 @@ import { cn, normalizeProperty } from '@/lib/utils';
 
 // ─── 헬퍼 ────────────────────────────────────────────────────────────────────
 
+// 마커 색상 상수 (CSS 변수 대신 상수로 관리 — CustomOverlay innerHTML 특성상)
+const MARKER_COLORS = {
+  HIGH: '#22C55E',    // success (green-500)
+  MEDIUM: '#F59E0B',  // warning (amber-500)
+  LOW: '#EF4444',     // danger (red-500)
+  LABEL_TEXT: '#334155', // slate-700
+  LABEL_BG: 'rgba(255,255,255,0.9)',
+};
+
 const getMarkerColor = (rating) => {
-  if (rating >= 4) return '#22C55E';
-  if (rating === 3) return '#F59E0B';
-  return '#EF4444';
+  if (rating >= 4) return MARKER_COLORS.HIGH;
+  if (rating === 3) return MARKER_COLORS.MEDIUM;
+  return MARKER_COLORS.LOW;
 };
 
 const getDongName = (address) => {
@@ -101,8 +110,8 @@ const MapPage = () => {
           transition:transform .15s;
         "></div>
         ${dong ? `<span style="
-          margin-top:2px;font-size:11px;font-weight:500;
-          color:#334155;background:rgba(255,255,255,0.9);
+          margin-top:2px;font-size:12px;font-weight:500;
+          color:${MARKER_COLORS.LABEL_TEXT};background:${MARKER_COLORS.LABEL_BG};
           padding:1px 5px;border-radius:4px;white-space:nowrap;
         ">${dong}</span>` : ''}
       `;
@@ -299,7 +308,7 @@ const MapPage = () => {
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
                 className="flex-1 bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-400"
-                style={{ fontSize: 15 }}
+                style={{ fontSize: 16 }}
               />
               {searchText && (
                 <button type="button" onClick={() => setSearchText('')}>

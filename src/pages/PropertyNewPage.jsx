@@ -11,7 +11,7 @@ import { propertyApi } from '@/api/property';
 import { imageApi } from '@/api/image';
 import { RatingStars } from '@/components/RatingStars';
 import { Spinner } from '@/components/Spinner';
-import { cn } from '@/lib/utils';
+import { cn, formatPrice } from '@/lib/utils';
 
 // ─── 상수 ──────────────────────────────────────────────────────────────────
 
@@ -272,8 +272,8 @@ const ChipButton = ({ active, onClick, children, className }) => (
 
 // ─── 섹션 래퍼 ────────────────────────────────────────────────────────────
 
-const Section = ({ children, className }) => (
-  <div className={cn('rounded-2xl border border-slate-200 bg-white p-5 space-y-4', className)}>
+const Section = ({ children, className, id }) => (
+  <div id={id} className={cn('rounded-2xl border border-slate-200 bg-white p-5 space-y-4', className)}>
     {children}
   </div>
 );
@@ -381,13 +381,20 @@ const PropertyNewPage = () => {
   const slotImage = (idx) => form.images[idx] ?? null;
 
   // 제출
+  const [redirectToEdit, setRedirectToEdit] = useState(false);
+
   const { mutate: submitSave, isPending: isSaving } = useMutation({
     mutationFn: (data) => propertyApi.create(data).then((r) => r.data),
-    onSuccess: () => {
-      toast.success('매물이 등록되었어요!');
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['properties-recent'] });
       queryClient.invalidateQueries({ queryKey: ['properties-timeline'] });
-      navigate('/timeline', { replace: true });
+      if (redirectToEdit && data?.id) {
+        toast.success('매물이 등록되었어요! 상세 정보를 추가해보세요.');
+        navigate(`/properties/${data.id}/edit`, { replace: true });
+      } else {
+        toast.success('매물이 등록되었어요!');
+        navigate('/timeline', { replace: true });
+      }
     },
     onError: () => toast.error('등록에 실패했어요.'),
   });
@@ -413,9 +420,24 @@ const PropertyNewPage = () => {
     memo: form.memo || null,
   });
 
+  const scrollToFirstMissing = () => {
+    const checks = [
+      { done: !!form.address, id: 'section-location' },
+      { done: form.rating > 0, id: 'section-checklist' },
+      { done: !!form.priceEvaluation, id: 'section-checklist' },
+      { done: form.moveInAvailable !== null, id: 'section-checklist' },
+      { done: form.revisitIntention !== null, id: 'section-checklist' },
+    ];
+    const first = checks.find((c) => !c.done);
+    if (first) {
+      document.getElementById(first.id)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
+
   const handleSave = () => {
     if (!allRequiredDone) {
       toast.error('필수 항목을 모두 입력해주세요.');
+      scrollToFirstMissing();
       return;
     }
     submitSave(buildPayload());
@@ -426,6 +448,7 @@ const PropertyNewPage = () => {
       toast.error('필수 항목을 모두 입력해주세요.');
       return;
     }
+    setRedirectToEdit(true);
     submitSave(buildPayload());
   };
 
@@ -473,7 +496,7 @@ const PropertyNewPage = () => {
         {/* 폼 콘텐츠 */}
         <div className="space-y-3 px-5 pt-4 pb-32">
           {/* ── 섹션 1: 위치 정보 ─────────────────────────────────── */}
-          <Section>
+          <Section id="section-location">
             <SectionTitle required>위치 정보</SectionTitle>
 
             {/* 주소 표시 */}
@@ -528,7 +551,7 @@ const PropertyNewPage = () => {
           </Section>
 
           {/* ── 섹션 2: 필수 체크리스트 ──────────────────────────── */}
-          <Section>
+          <Section id="section-checklist">
             <SectionTitle>필수 체크리스트</SectionTitle>
 
             {/* 전체 만족도 */}
@@ -651,6 +674,9 @@ const PropertyNewPage = () => {
                     <input type="text" inputMode="numeric" placeholder="1000"
                       value={form.deposit} onChange={numInput('deposit')}
                       className="h-11 w-full rounded-xl border border-slate-200 px-4 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400" />
+                    {form.deposit && Number(form.deposit) >= 1000 && (
+                      <p className="mt-1 text-xs text-primary">{formatPrice(Number(form.deposit))}</p>
+                    )}
                   </div>
                   <div>
                     <p className="mb-1 text-xs text-slate-400">월세</p>
@@ -661,14 +687,24 @@ const PropertyNewPage = () => {
                 </div>
               )}
               {form.priceType === 'JEONSE' && (
-                <input type="text" inputMode="numeric" placeholder="30000"
-                  value={form.deposit} onChange={numInput('deposit')}
-                  className="h-11 w-full rounded-xl border border-slate-200 px-4 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400" />
+                <>
+                  <input type="text" inputMode="numeric" placeholder="30000"
+                    value={form.deposit} onChange={numInput('deposit')}
+                    className="h-11 w-full rounded-xl border border-slate-200 px-4 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400" />
+                  {form.deposit && Number(form.deposit) >= 1000 && (
+                    <p className="mt-1 text-xs text-primary">{formatPrice(Number(form.deposit))}</p>
+                  )}
+                </>
               )}
               {form.priceType === 'SALE' && (
-                <input type="text" inputMode="numeric" placeholder="80000"
-                  value={form.price} onChange={numInput('price')}
-                  className="h-11 w-full rounded-xl border border-slate-200 px-4 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400" />
+                <>
+                  <input type="text" inputMode="numeric" placeholder="80000"
+                    value={form.price} onChange={numInput('price')}
+                    className="h-11 w-full rounded-xl border border-slate-200 px-4 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400" />
+                  {form.price && Number(form.price) >= 1000 && (
+                    <p className="mt-1 text-xs text-primary">{formatPrice(Number(form.price))}</p>
+                  )}
+                </>
               )}
             </div>
 
