@@ -89,11 +89,17 @@ export const normalizeProperty = (p) => ({
   canMoveIn: p.evaluation?.moveInAvailable ?? p.canMoveIn ?? null,
   revisitWanted: p.evaluation?.revisitIntention ?? p.revisitWanted ?? null,
   priceRating: p.evaluation?.priceEvaluation ?? p.priceRating ?? null,
-  // 이미지 정규화 (문자열 배열 or thumbnailUrl → 객체 배열)
+  // 이미지 정규화 (백엔드: { imageId, thumbnailUrl, originalUrl })
   images: (() => {
     const imgs = p.images ?? [];
     const normalized = imgs.map((img, idx) =>
-      typeof img === 'string' ? { id: idx, url: getImageUrl(img) } : { ...img, url: getImageUrl(img.url) },
+      typeof img === 'string'
+        ? { id: idx, url: getImageUrl(img) }
+        : {
+            id: img.imageId ?? img.id ?? idx,
+            url: getImageUrl(img.thumbnailUrl ?? img.url),
+            originalUrl: getImageUrl(img.originalUrl ?? null),
+          },
     );
     // 리스트 API가 thumbnailUrl 단일 필드로 반환하는 경우 fallback
     if (normalized.length === 0 && p.thumbnailUrl) {
