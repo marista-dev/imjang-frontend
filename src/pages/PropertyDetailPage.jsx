@@ -23,6 +23,9 @@ import {
   Tag,
   Wallet,
   CalendarDays,
+  ClipboardCheck,
+  TreePine,
+  Camera,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Drawer } from 'vaul';
@@ -75,6 +78,14 @@ const CATEGORY_ICONS = {
   BK9: Landmark,
   HP8: Building2,
   PM9: Pill,
+};
+
+const CATEGORY_COLORS = {
+  CS2: { bg: 'bg-emerald-50', text: 'text-emerald-600' },
+  MT1: { bg: 'bg-orange-50', text: 'text-orange-600' },
+  BK9: { bg: 'bg-blue-50', text: 'text-blue-600' },
+  HP8: { bg: 'bg-red-50', text: 'text-red-600' },
+  PM9: { bg: 'bg-purple-50', text: 'text-purple-600' },
 };
 
 // ─── 유틸 ────────────────────────────────────────────────────────────────────
@@ -195,12 +206,14 @@ const HeroGallery = ({ images, property }) => {
 
 // ─── 섹션 래퍼 ───────────────────────────────────────────────────────────────
 
-const Section = ({ icon: Icon, title, children, className }) => (
+const Section = ({ icon: Icon, title, iconColor = 'text-slate-500', children, className }) => (
   <div className={cn('border-t border-slate-100 pt-5 mt-5', className)}>
-    <div className="flex items-center gap-2 mb-4">
-      {Icon && <Icon size={18} className="text-slate-400" />}
-      <h2 className="text-sm font-semibold text-slate-600 uppercase tracking-wide">{title}</h2>
-    </div>
+    {title && (
+      <div className="flex items-center gap-2 mb-4">
+        {Icon && <Icon size={20} className={iconColor} />}
+        <h2 className="text-base font-bold text-slate-800">{title}</h2>
+      </div>
+    )}
     {children}
   </div>
 );
@@ -285,22 +298,13 @@ const PropertyDetailPage = () => {
         >
           <ChevronLeft size={22} className="text-slate-700" />
         </button>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={handleShare}
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-white/80 backdrop-blur-sm shadow-sm active:scale-95 transition-all"
-          >
-            <Share2 size={18} className="text-slate-700" />
-          </button>
-          <button
-            type="button"
-            onClick={() => setMenuOpen(true)}
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-white/80 backdrop-blur-sm shadow-sm active:scale-95 transition-all"
-          >
-            <MoreVertical size={22} className="text-slate-700" />
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => setMenuOpen(true)}
+          className="flex h-11 w-11 items-center justify-center rounded-full bg-white/80 backdrop-blur-sm shadow-sm active:scale-95 transition-all"
+        >
+          <MoreVertical size={22} className="text-slate-700" />
+        </button>
       </div>
 
       {/* 히어로 이미지 */}
@@ -309,19 +313,19 @@ const PropertyDetailPage = () => {
       {/* 본문 */}
       <div className="px-5 pt-4">
 
-        {/* 방문일 */}
-        {property.visitedAt && (
-          <div className="mb-4 flex items-center gap-1.5 rounded-xl bg-slate-50 px-3 py-2">
-            <CalendarDays size={14} className="text-slate-400" />
-            <p className="text-sm text-slate-500">
-              {formatCreatedAt(property.visitedAt)} 방문
-            </p>
-          </div>
-        )}
+        {/* 공유하기 버튼 */}
+        <button
+          type="button"
+          onClick={handleShare}
+          className="mb-5 flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 text-sm text-slate-600 active:bg-slate-50 transition-colors"
+        >
+          <Share2 size={16} />
+          공유하기
+        </button>
 
         {/* 교통 정보 */}
         {locationInfo && (
-          <Section icon={Train} title="교통 정보">
+          <Section icon={Train} title="교통 정보" iconColor="text-blue-500">
             <div className="space-y-2.5">
               {/* 지하철 */}
               <div className="flex items-center gap-3 rounded-xl bg-slate-50 px-4 py-3">
@@ -368,24 +372,24 @@ const PropertyDetailPage = () => {
 
         {/* 편의시설 */}
         {amenities.length > 0 && (
-          <Section icon={Store} title="편의시설">
+          <Section icon={Store} title="편의시설" iconColor="text-emerald-600">
             <div className="divide-y divide-slate-100">
               {amenities.map((a) => {
                 const Icon = CATEGORY_ICONS[a.categoryCode] ?? Building2;
+                const colors = CATEGORY_COLORS[a.categoryCode] ?? { bg: 'bg-slate-100', text: 'text-slate-500' };
                 const walkMin = getWalkTime(a.nearestDistance);
                 return (
-                  <div key={a.categoryCode} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
-                    <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-slate-100">
-                      <Icon size={15} className="text-slate-500" />
+                  <div key={a.categoryCode} className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
+                    <div className={cn('flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full', colors.bg)}>
+                      <Icon size={17} className={colors.text} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-slate-800">{a.category}</span>
-                        <span className="text-xs text-slate-400">{a.count}개</span>
+                        <span className="text-sm font-semibold text-slate-800">{a.category}</span>
+                        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-500">{a.count}개</span>
                       </div>
-                      <p className="text-xs text-slate-500 truncate mt-0.5">
-                        {a.nearestName} · 도보 {walkMin}분
-                      </p>
+                      <p className="mt-0.5 truncate text-xs text-slate-500">{a.nearestName}</p>
+                      <p className="text-xs text-slate-400">도보 {walkMin}분</p>
                     </div>
                   </div>
                 );
@@ -395,72 +399,68 @@ const PropertyDetailPage = () => {
         )}
 
         {/* 체크리스트 */}
-        <Section icon={Check} title="체크리스트">
-          <div className="space-y-0 divide-y divide-slate-50">
+        <Section icon={ClipboardCheck} title="체크리스트 검토" iconColor="text-amber-500">
+          <div className="space-y-1">
             {/* 즉시 입주 */}
-            <div className="flex items-center justify-between py-2.5">
-              <span className="text-sm text-slate-600">즉시 입주</span>
-              <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2.5 py-2">
+              <div className={cn('flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full',
+                property.canMoveIn ? 'bg-emerald-100' : 'bg-red-100')}>
                 {property.canMoveIn
-                  ? <Check size={14} className="text-success" />
-                  : <XIcon size={14} className="text-danger" />}
-                <span className={cn('text-sm font-medium',
-                  property.canMoveIn ? 'text-success' : 'text-danger')}>
-                  {property.canMoveIn ? '가능' : '불가'}
-                </span>
+                  ? <Check size={13} className="text-emerald-600" />
+                  : <XIcon size={13} className="text-red-500" />}
               </div>
+              <span className="text-sm text-slate-700">
+                즉시 입주 {property.canMoveIn ? '가능' : '불가'}
+              </span>
             </div>
 
             {/* 재방문 의사 */}
-            <div className="flex items-center justify-between py-2.5">
-              <span className="text-sm text-slate-600">재방문 의사</span>
-              <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2.5 py-2">
+              <div className={cn('flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full',
+                property.revisitWanted ? 'bg-emerald-100' : 'bg-red-100')}>
                 {property.revisitWanted
-                  ? <Check size={14} className="text-success" />
-                  : <XIcon size={14} className="text-danger" />}
-                <span className={cn('text-sm font-medium',
-                  property.revisitWanted ? 'text-success' : 'text-danger')}>
-                  {property.revisitWanted ? '있음' : '없음'}
-                </span>
+                  ? <Check size={13} className="text-emerald-600" />
+                  : <XIcon size={13} className="text-red-500" />}
               </div>
+              <span className="text-sm text-slate-700">
+                재방문 의사 {property.revisitWanted ? '있음' : '없음'}
+              </span>
             </div>
 
             {/* 가격 평가 */}
             {property.priceRating && (
-              <div className="flex items-center justify-between py-2.5">
-                <span className="text-sm text-slate-600">가격 평가</span>
-                <div className="flex items-center gap-1.5">
-                  <Tag size={14} className="text-slate-400" />
-                  <span className="text-sm font-medium text-slate-700">
-                    {PRICE_RATING_LABELS[property.priceRating]}
-                  </span>
+              <div className="flex items-center gap-2.5 py-2">
+                <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-amber-100">
+                  <Tag size={13} className="text-amber-600" />
                 </div>
+                <span className="text-sm text-slate-700">
+                  가격 {PRICE_RATING_LABELS[property.priceRating]}
+                </span>
               </div>
             )}
 
             {/* 주차 */}
             {property.parkingType && PARKING_LABELS[property.parkingType] && (
-              <div className="flex items-center justify-between py-2.5">
-                <span className="text-sm text-slate-600">주차</span>
-                <div className="flex items-center gap-1.5">
-                  <Car size={14} className="text-slate-400" />
-                  <span className="text-sm font-medium text-slate-700">
-                    {PARKING_LABELS[property.parkingType]}
-                  </span>
+              <div className="flex items-center gap-2.5 py-2">
+                <div className={cn('flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full',
+                  property.parkingType === 'AVAILABLE' ? 'bg-emerald-100' : 'bg-slate-100')}>
+                  <Car size={13} className={property.parkingType === 'AVAILABLE' ? 'text-emerald-600' : 'text-slate-500'} />
                 </div>
+                <span className="text-sm text-slate-700">
+                  주차 {PARKING_LABELS[property.parkingType]}
+                </span>
               </div>
             )}
 
             {/* 관리비 */}
             {property.maintenanceFee != null && (
-              <div className="flex items-center justify-between py-2.5">
-                <span className="text-sm text-slate-600">관리비</span>
-                <div className="flex items-center gap-1.5">
-                  <Wallet size={14} className="text-slate-400" />
-                  <span className="text-sm font-medium text-slate-700">
-                    {property.maintenanceFee > 0 ? `${property.maintenanceFee}만원` : '없음'}
-                  </span>
+              <div className="flex items-center gap-2.5 py-2">
+                <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-slate-100">
+                  <Wallet size={13} className="text-slate-500" />
                 </div>
+                <span className="text-sm text-slate-700">
+                  관리비 {property.maintenanceFee > 0 ? `${property.maintenanceFee}만원` : '없음'}
+                </span>
               </div>
             )}
           </div>
@@ -477,12 +477,12 @@ const PropertyDetailPage = () => {
 
         {/* 주변환경 */}
         {environments.length > 0 && (
-          <Section icon={MapPin} title="주변환경">
+          <Section icon={TreePine} title="주변환경" iconColor="text-green-600">
             <div className="flex flex-wrap gap-2">
               {environments.map((env) => (
                 <span
                   key={env}
-                  className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-600"
+                  className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary"
                 >
                   {ENVIRONMENT_LABELS[env] ?? env}
                 </span>
@@ -493,7 +493,7 @@ const PropertyDetailPage = () => {
 
         {/* 메모 */}
         {property.memo && (
-          <Section icon={FileText} title="메모">
+          <Section icon={FileText} title="메모" iconColor="text-slate-500">
             <div className="rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
               {property.memo}
             </div>
@@ -502,7 +502,7 @@ const PropertyDetailPage = () => {
 
         {/* 사진 */}
         {property.images?.length > 0 && (
-          <Section icon={null} title={`사진 ${property.images.length}장`}>
+          <Section icon={Camera} title={`사진 ${property.images.length}장`} iconColor="text-indigo-500">
             <div className="grid grid-cols-3 gap-1.5">
               {property.images.map((img, i) => (
                 <button
@@ -523,8 +523,17 @@ const PropertyDetailPage = () => {
           </Section>
         )}
 
-        {/* 하단 여백 */}
-        <div className="mt-5 pt-2" />
+        {/* 방문일 */}
+        {property.visitedAt && (
+          <div className="mt-6 border-t border-slate-100 pt-4 pb-2 text-center">
+            <div className="flex items-center justify-center gap-1.5 text-xs text-slate-400">
+              <CalendarDays size={13} />
+              <span>방문일: {formatCreatedAt(property.visitedAt)}</span>
+            </div>
+          </div>
+        )}
+
+        <div className="mt-2 pb-2" />
       </div>
 
       {/* 액션 Drawer */}
