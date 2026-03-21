@@ -13,6 +13,7 @@ import {
   Train,
   Bus,
   Store,
+  ShoppingBag,
   ShoppingCart,
   Landmark,
   Building2,
@@ -366,7 +367,7 @@ const PropertyDetailPage = () => {
 
         {/* 편의시설 */}
         {amenities.length > 0 && (
-          <Section icon={Store} title="편의시설" iconColor="text-emerald-600">
+          <Section icon={ShoppingBag} title="편의시설" iconColor="text-emerald-600">
             <div className="divide-y divide-slate-100">
               {amenities.map((a) => {
                 const Icon = CATEGORY_ICONS[a.categoryCode] ?? Building2;
