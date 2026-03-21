@@ -138,7 +138,7 @@ const HeroGallery = ({ images, property }) => {
             {images.map((img, i) => (
               <div key={img.id ?? i} className="min-w-0 h-full flex-[0_0_100%]">
                 <img
-                  src={img.url}
+                  src={img.originalUrl || img.url}
                   alt={`매물 사진 ${i + 1}`}
                   loading="lazy"
                   className="h-full w-full object-cover"
@@ -586,7 +586,7 @@ const PropertyDetailPage = () => {
             {photoViewerIdx + 1} / {property.images.length}
           </p>
           <img
-            src={property.images[photoViewerIdx].url}
+            src={property.images[photoViewerIdx].originalUrl || property.images[photoViewerIdx].url}
             alt={`사진 ${photoViewerIdx + 1}`}
             className="max-h-full max-w-full object-contain"
           />
