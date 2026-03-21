@@ -26,14 +26,16 @@ export const FloatingActionButton = () => {
       onClick={() => navigate('/properties/new')}
       aria-label="매물 기록 추가"
       className={cn(
-        'fixed bottom-[88px] right-5 z-50',
-        'flex h-[52px] w-[52px] items-center justify-center',
-        'rounded-2xl bg-primary shadow-lg shadow-primary/30',
+        'fixed bottom-[72px] right-5 z-50',
+        'flex h-[50px] w-[50px] items-center justify-center',
+        'rounded-full bg-primary shadow-lg shadow-primary/30',
         'transition-all duration-300 ease-out active:scale-95',
-        isHidden ? 'translate-y-[calc(200%_+_24px)]' : 'translate-y-0',
+        isHidden
+          ? 'translate-y-24 opacity-0 pointer-events-none'
+          : 'translate-y-0 opacity-100',
       )}
     >
-      <Plus size={22} className="text-white" />
+      <Plus size={22} strokeWidth={2.2} className="text-white" />
     </button>
   );
 };

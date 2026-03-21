@@ -1,4 +1,4 @@
-import { NavLink, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Home, Map, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useScrollDirection } from '@/hooks/useScrollDirection';
@@ -17,15 +17,8 @@ const HIDDEN_PATTERNS = [
   /^\/properties\/\d+/,
 ];
 
-const glassStyle = {
-  background: 'rgba(255, 255, 255, 0.72)',
-  backdropFilter: 'blur(24px)',
-  WebkitBackdropFilter: 'blur(24px)',
-  border: '0.5px solid rgba(255, 255, 255, 0.6)',
-  boxShadow: '0 4px 24px rgba(0, 0, 0, 0.06), 0 0 0 0.5px rgba(0, 0, 0, 0.04)',
-};
-
 const BottomNav = () => {
+  const navigate = useNavigate();
   const { pathname } = useLocation();
   const scrollDir = useScrollDirection(10);
 
@@ -33,40 +26,33 @@ const BottomNav = () => {
 
   const isHidden = scrollDir === 'down';
 
+  const isActive = (path) =>
+    path === '/' ? pathname === '/' : pathname.startsWith(path);
+
   return (
     <nav
-      style={glassStyle}
       className={cn(
-        'fixed bottom-3 left-1/2 z-50 h-16 w-[calc(100%-24px)] max-w-[406px]',
-        '-translate-x-1/2 rounded-[22px]',
-        'transition-transform duration-300 ease-out',
-        isHidden ? 'translate-y-[calc(100%_+_24px)]' : 'translate-y-0',
+        'fixed bottom-4 left-0 right-0 z-50 flex justify-center pb-safe',
+        'transition-all duration-300 ease-out',
+        isHidden ? 'translate-y-[calc(100%+32px)] opacity-0' : 'translate-y-0 opacity-100',
       )}
     >
-      <div className="flex h-full items-center justify-around px-4">
+      <div className="inline-flex items-center rounded-full border border-[#d1e7dd]/50 bg-[#e8f5ee] p-[5px]">
         {navItems.map(({ path, label, icon: Icon }) => (
-          <NavLink
+          <button
             key={path}
-            to={path}
-            end={path === '/'}
-            className={({ isActive }) =>
-              cn(
-                'relative flex min-h-[44px] min-w-[44px] flex-col items-center justify-center gap-0.5',
-                'text-[11px] transition-colors',
-                isActive ? 'font-semibold text-primary' : 'text-slate-400',
-              )
-            }
-          >
-            {({ isActive }) => (
-              <>
-                <Icon size={22} />
-                <span>{label}</span>
-                {isActive && (
-                  <span className="absolute -bottom-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-primary" />
-                )}
-              </>
+            type="button"
+            onClick={() => navigate(path)}
+            className={cn(
+              'flex min-w-[44px] flex-col items-center gap-0.5 rounded-full px-[22px] py-[9px] transition-all duration-200',
+              isActive(path)
+                ? 'bg-primary text-white'
+                : 'text-slate-400',
             )}
-          </NavLink>
+          >
+            <Icon size={17} strokeWidth={1.8} />
+            <span className="text-[9px] font-medium leading-none">{label}</span>
+          </button>
         ))}
       </div>
     </nav>
