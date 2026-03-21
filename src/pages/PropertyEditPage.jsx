@@ -147,9 +147,14 @@ const PropertyEditPage = () => {
   // 기존 데이터 프리필
   useEffect(() => {
     if (!property) return;
-    setImages((property.images ?? []).map((img) =>
-      typeof img === 'string' ? { id: null, url: img } : img,
-    ));
+    // 이미지: 백엔드 { imageId, thumbnailUrl, originalUrl } → { id, url }
+    setImages((property.images ?? []).map((img) => {
+      if (typeof img === 'string') return { id: null, url: getImageUrl(img) };
+      return {
+        id: img.imageId ?? img.id ?? null,
+        url: getImageUrl(img.thumbnailUrl ?? img.url),
+      };
+    }));
     setAddress(property.address ?? '');
     setAddressDetail(property.addressDetail ?? '');
     setPriceType(property.priceType ?? 'MONTHLY');
@@ -158,7 +163,8 @@ const PropertyEditPage = () => {
     setPrice(property.price != null ? String(property.price) : '');
     setArea(property.area != null ? String(property.area) : '');
     setCurrentFloor(property.currentFloor != null ? String(property.currentFloor) : '');
-    setTotalFloors(property.totalFloors != null ? String(property.totalFloors) : '');
+    // 백엔드 응답: totalFloor (단수)
+    setTotalFloors(property.totalFloor != null ? String(property.totalFloor) : (property.totalFloors != null ? String(property.totalFloors) : ''));
     setRating(property.rating ?? 0);
     setPriceEvaluation(property.evaluation?.priceEvaluation ?? property.priceEvaluation ?? '');
     setParkingType(property.parkingType ?? '');
