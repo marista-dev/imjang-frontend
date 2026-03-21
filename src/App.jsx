@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from './store/useAuthStore';
 import BottomNav from './components/BottomNav';
@@ -36,9 +37,16 @@ const PublicRoute = ({ children }) => {
   return children;
 };
 
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
+  return null;
+};
+
 const App = () => {
   return (
     <div className="app-container relative">
+      <ScrollToTop />
       <Routes>
         {/* Public Routes */}
         <Route

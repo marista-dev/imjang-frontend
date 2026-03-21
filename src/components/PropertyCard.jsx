@@ -63,7 +63,7 @@ export const PropertyCard = ({ property, className }) => {
           </div>
         )}
         {imageCount > 1 && (
-          <span className="absolute right-2 top-2 rounded-full bg-black/40 px-2 py-0.5 text-[11px] text-white">
+          <span className="absolute right-2 top-2 rounded-full bg-black/40 px-2 py-0.5 text-xs text-white">
             1/{imageCount}
           </span>
         )}
@@ -88,11 +88,11 @@ export const PropertyCard = ({ property, className }) => {
           <RatingStars rating={rating} size="sm" readOnly />
           <div className="flex items-center gap-1.5">
             {canMoveIn && (
-              <span className="rounded-md bg-primary-50 px-2 py-0.5 text-[10px] font-semibold text-primary">
+              <span className="rounded-md bg-primary-50 px-2 py-0.5 text-xs font-semibold text-primary">
                 입주가능
               </span>
             )}
-            <span className="text-[11px] text-slate-400">{getRelativeDate(visitedAt)}</span>
+            <span className="text-xs text-slate-400">{getRelativeDate(visitedAt)}</span>
           </div>
         </div>
       </div>

@@ -56,7 +56,7 @@ const BottomNav = () => {
             )}
           >
             <Icon size={17} strokeWidth={1.8} />
-            <span className="text-[9px] font-medium leading-none">{label}</span>
+            <span className="text-[11px] font-medium leading-none">{label}</span>
           </button>
         ))}
       </div>

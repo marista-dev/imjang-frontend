@@ -50,7 +50,7 @@ const SignupPage = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-5 py-10 animate-fade-in-up">
+    <div className="flex min-h-dvh items-center justify-center bg-slate-50 px-5 py-10 animate-fade-in-up">
       <div className="w-full max-w-sm">
         {/* 로고 */}
         <div className="mb-8 text-center">
