@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate, useBlocker } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ChevronLeft, ImagePlus, X, Check, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
@@ -9,7 +9,8 @@ import { propertyApi } from '@/api/property';
 import { imageApi } from '@/api/image';
 import { RatingStars } from '@/components/RatingStars';
 import { Spinner } from '@/components/Spinner';
-import { cn, formatPrice } from '@/lib/utils';
+import { ConfirmModal } from '@/components/ConfirmModal';
+import { cn } from '@/lib/utils';
 import { Section, SectionTitle, ChipButton, PriceInputWithHint } from '@/components/FormSection';
 
 const PRICE_TYPES = [
@@ -154,6 +155,7 @@ const PropertyEditPage = () => {
   const [revisitIntention, setRevisitIntention] = useState(false);
   const [memo, setMemo] = useState('');
   const [isDirty, setIsDirty] = useState(false);
+  const [leaveConfirmOpen, setLeaveConfirmOpen] = useState(false);
 
   // 기존 데이터 프리필
   useEffect(() => {
@@ -188,25 +190,15 @@ const PropertyEditPage = () => {
     return () => window.removeEventListener('beforeunload', handler);
   }, [isDirty]);
 
-  // 비저장 변경사항 경고: 앱 내 라우트 이동 (뒤로가기, 링크 등)
-  const blocker = useBlocker(
-    useCallback(({ currentLocation, nextLocation }) =>
-      isDirty && currentLocation.pathname !== nextLocation.pathname,
-    [isDirty]),
-  );
-
-  useEffect(() => {
-    if (blocker.state === 'blocked') {
-      const confirmed = window.confirm('수정한 내용이 저장되지 않았어요. 정말 나가시겠어요?');
-      if (confirmed) {
-        blocker.proceed();
-      } else {
-        blocker.reset();
-      }
-    }
-  }, [blocker]);
-
   const markDirty = () => { if (!isDirty) setIsDirty(true); };
+
+  const handleBack = () => {
+    if (isDirty) {
+      setLeaveConfirmOpen(true);
+    } else {
+      navigate(-1);
+    }
+  };
 
   // dirty 상태를 자동으로 마킹하는 래퍼 헬퍼
   const withDirty = (setter) => (value) => { setter(value); markDirty(); };
@@ -290,8 +282,8 @@ const PropertyEditPage = () => {
         <div className="flex items-center gap-3">
           <button
             type="button"
-            onClick={() => navigate(-1)}
-            className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-600 active:bg-slate-100"
+            onClick={handleBack}
+            className="flex h-11 w-11 items-center justify-center rounded-xl text-slate-600 active:bg-slate-100"
           >
             <ChevronLeft size={24} />
           </button>
@@ -306,6 +298,16 @@ const PropertyEditPage = () => {
           </button>
         </div>
       </div>
+
+      <ConfirmModal
+        isOpen={leaveConfirmOpen}
+        title="수정 중인 내용이 있어요"
+        message="저장하지 않고 나가면 변경 내용이 사라져요."
+        confirmText="나가기"
+        cancelText="계속 수정"
+        onConfirm={() => { setLeaveConfirmOpen(false); navigate(-1); }}
+        onCancel={() => setLeaveConfirmOpen(false)}
+      />
 
       {/* 폼 콘텐츠 — NewPage와 동일한 Section 카드 스타일 */}
       <div className="space-y-3 px-5 pt-4 pb-24">
