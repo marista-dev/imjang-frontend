@@ -39,7 +39,7 @@ const BottomNav = () => {
     >
       {/* 탭 pill */}
       <div
-        className="inline-flex items-center rounded-full p-[4px]"
+        className="inline-flex items-center rounded-full p-[5px]"
         style={{
           background: 'rgba(255,255,255,0.95)',
           boxShadow: '0 4px 20px rgba(0,0,0,0.10), 0 0 0 0.5px rgba(0,0,0,0.06)',
@@ -50,13 +50,17 @@ const BottomNav = () => {
             key={path}
             type="button"
             onClick={() => navigate(path)}
-            className={cn(
-              'flex w-[88px] flex-col items-center gap-0.5 rounded-full py-[12px] transition-all duration-200',
-              isActive(path) ? 'bg-primary text-white' : 'text-slate-400',
-            )}
+            className="flex w-[82px] flex-col items-center justify-center py-[9px]"
           >
-            <Icon size={17} strokeWidth={1.8} />
-            <span className="text-[9px] font-medium leading-none">{label}</span>
+            <span
+              className={cn(
+                'flex flex-col items-center gap-0.5 rounded-full px-5 py-[5px] transition-all duration-200',
+                isActive(path) ? 'bg-primary text-white' : 'text-slate-400',
+              )}
+            >
+              <Icon size={17} strokeWidth={1.8} />
+              <span className="text-[9px] font-medium leading-none">{label}</span>
+            </span>
           </button>
         ))}
       </div>
@@ -66,7 +70,7 @@ const BottomNav = () => {
         type="button"
         onClick={() => navigate('/properties/new')}
         aria-label="매물 기록 추가"
-        className="flex h-[60px] w-[60px] flex-shrink-0 items-center justify-center rounded-full bg-primary shadow-lg shadow-primary/30 active:scale-95 transition-transform"
+        className="flex h-[56px] w-[56px] flex-shrink-0 items-center justify-center rounded-full bg-primary shadow-lg shadow-primary/30 active:scale-95 transition-transform"
       >
         <Plus size={22} strokeWidth={2.2} className="text-white" />
       </button>
