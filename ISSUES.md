@@ -95,20 +95,58 @@ maintenanceFee     ❌ 보내지 않음 (백엔드는 필요)
 - "매물이 등록되었어요!" 토스트 정상
 - location prefetch API 200 성공
 
-## C-007: [전체] Vaul Drawer 접근성 경고 (DialogTitle 누락)
+## C-007: 빠른 기록 페이지 UX 개선
+- **상태**: 수정 필요
+
+### 7-1. 섹션 순서 변경
+현재: 위치정보 → 필수 체크리스트 → 저장
+변경: **위치정보 → 매물정보 → 사진기록 → 필수 체크리스트 → 메모**
+
+임장 실제 플로우: 주소 확인 → 가격/면적 기록 → 사진 찍기 → 평가 체크 → 메모 작성
+이 순서가 사용자의 실제 행동 순서와 일치.
+
+### 7-2. 필수 항목 진행률 가시성 개선
+현재 "필수 항목 ••••• 0/5" 표시가 너무 작고 안 보임.
+
+수정 방향:
+- 프로그레스 바 크기 확대: 높이 `h-2` → `h-3`, 너비 `w-full`
+- 숫자 텍스트 크기 확대: `text-xs` → `text-sm font-semibold`
+- 채워진 상태일 때 색상 구분 명확: 채워진 부분 `bg-primary`, 비어있는 부분 `bg-slate-200`
+- 위치: 헤더 영역에서 "빠른 기록" 타이틀 아래에 배치
+
+예시:
+```jsx
+{/* 필수 항목 진행률 */}
+<div className="px-5 pb-3">
+  <div className="flex items-center justify-between mb-1.5">
+    <span className="text-sm font-semibold text-slate-700">필수 항목</span>
+    <span className="text-sm font-bold text-primary">{filled}/5</span>
+  </div>
+  <div className="h-3 w-full rounded-full bg-slate-200 overflow-hidden">
+    <div 
+      className="h-full rounded-full bg-primary transition-all duration-300"
+      style={{ width: `${(filled / 5) * 100}%` }}
+    />
+  </div>
+</div>
+```
+
+파일: `src/pages/PropertyNewPage.jsx`
+
+## C-008: [전체] Vaul Drawer 접근성 경고 (DialogTitle 누락)
 - **상태**: 경고 (Warning)
 - **증상**: 모든 Drawer에서 `DialogContent requires DialogTitle` 콘솔 에러
 - **수정**: 모든 `Drawer.Content`에 `<VisuallyHidden><Drawer.Title>...</Drawer.Title></VisuallyHidden>` 추가
 - **파일**: Drawer 사용하는 모든 컴포넌트 (HomePage, MapPage, PropertyDetailPage 등)
 
-## C-008: 지도 페이지 마커 없음
+## C-009: 지도 페이지 마커 없음
 - **상태**: 데이터 문제 (백엔드)
 - **증상**: 지도 API 200 성공이지만 markers가 빈 배열 `{"markers":[]}`
 - **원인**: 매물에 위도/경도가 저장되지 않음
 - **프론트**: 지도 로드/검색/필터 기능 정상. API 파라미터 정상 (southWestLat 등)
 - **근본 원인**: 매물 생성 시 latitude/longitude가 백엔드에 저장되는지 확인 필요 (B-003 참조)
 
-## C-009: 수정 페이지 사진 삭제 400 에러
+## C-010: 수정 페이지 사진 삭제 400 에러
 - **상태**: 삭제 실패 (400 Bad Request)
 - **원인**: 백엔드 detail API가 이미지를 **문자열 배열**로만 반환: `["/temp-images/..."]`
   프론트엔드 `normalizeProperty()`가 이걸 `[{id: 0, url: "..."}]`로 변환 (배열 인덱스를 id로 사용)
