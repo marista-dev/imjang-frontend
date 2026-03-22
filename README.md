@@ -2,8 +2,7 @@
 
 부동산 현장 방문 기록 웹앱 — 지도 마커, 체크리스트, 타임라인
 
-### 🌐 [ddangkun.cloud](https://ddangkun.cloud) &nbsp;·&nbsp; API [api.ddangkun.cloud](https://api.ddangkun.cloud/actuator/health)
-
+### 🌐 [ddangkun.cloud](https://ddangkun.cloud) &nbsp;
 ---
 
 ![React](https://img.shields.io/badge/React_18-20232a?style=flat-square&logo=react&logoColor=61DAFB)
