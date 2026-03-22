@@ -1,50 +1,44 @@
-# 임장 기록장 — Frontend
+# imjang — frontend
 
-부동산 임장(현장 방문) 기록을 관리하는 모바일 최적화 웹앱
+> 부동산 현장 방문 기록 웹앱 — 지도 마커, 체크리스트, 타임라인
 
-## Tech Stack
+[![Live](https://img.shields.io/badge/live-ddangkun.cloud-16a34a?style=flat-square&logo=vercel&logoColor=white)](https://ddangkun.cloud)
+[![API](https://img.shields.io/badge/api-api.ddangkun.cloud-0f766e?style=flat-square&logo=spring&logoColor=white)](https://api.ddangkun.cloud/actuator/health)
 
-- **Framework**: React 18 + Vite
-- **Styling**: Tailwind CSS v3 (에메랄드 그린 디자인 시스템)
-- **State**: Zustand (전역) + TanStack Query v5 (서버)
-- **UI**: Lucide React (아이콘) + Sonner (토스트) + Vaul (바텀시트) + Embla (캐러셀) + Radix UI (접근성)
-- **Form**: React Hook Form
-- **Map**: 카카오맵 JS SDK
+---
 
-## Getting Started
+![React](https://img.shields.io/badge/React_18-20232a?style=flat-square&logo=react&logoColor=61DAFB)
+![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)
+![Zustand](https://img.shields.io/badge/Zustand-000000?style=flat-square&logo=react&logoColor=white)
+![TanStack Query](https://img.shields.io/badge/TanStack_Query-FF4154?style=flat-square&logo=reactquery&logoColor=white)
+![Vercel](https://img.shields.io/badge/Vercel-000000?style=flat-square&logo=vercel&logoColor=white)
+
+---
+
+## Stack
+
+| | |
+|:---|:---|
+| **Framework** | React 18 + Vite |
+| **Styling** | Tailwind CSS v3 |
+| **State** | Zustand · TanStack Query v5 |
+| **UI** | Radix UI · Lucide · Sonner · Vaul · Embla |
+| **Form** | React Hook Form |
+| **Map** | Kakao Maps JS SDK |
+
+## Quick Start
 
 ```bash
-# 의존성 설치
+cp .env.example .env   # VITE_KAKAO_MAP_KEY, VITE_API_URL
 npm install
-
-# 환경변수 설정
-cp .env.example .env
-# .env 파일에 VITE_KAKAO_MAP_KEY 입력
-
-# 개발 서버 실행 (포트 5173)
-npm run dev
-
-# 빌드
-npm run build
+npm run dev            # localhost:5173
 ```
 
 ## Backend
 
-- Spring Boot (Java 21) + PostgreSQL
-- 세션 기반 인증
-- API: `http://localhost:8080/api/v1`
-- 백엔드 실행: `cd ../imjang-backend && ./gradlew bootRun`
+[imjang-backend](https://github.com/marista-dev/imjang-backend) · `api.ddangkun.cloud`
 
-## Pages
+---
 
-| 경로 | 페이지 | 설명 |
-|------|--------|------|
-| `/login` | 로그인 | 이메일/비밀번호 |
-| `/signup` | 회원가입 | 비밀번호 규칙 실시간 검증 |
-| `/verify-email` | 이메일 인증 | 6자리 OTP |
-| `/` | 홈 | 통계 + 퀵 액션 + 최근 매물 |
-| `/timeline` | 타임라인 | 날짜별 그룹 + 무한 스크롤 |
-| `/properties/new` | 매물 등록 | 6단계 멀티스텝 폼 |
-| `/properties/:id` | 매물 상세 | 이미지 갤러리 + 정보 + 주변시설 |
-| `/properties/:id/edit` | 매물 수정 | 기존 데이터 수정 |
-| `/map` | 지도 | 카카오맵 + 별점별 마커 |
+<sub>Solo project · marista-dev · 2025–2026 · MIT</sub>
