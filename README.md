@@ -1,9 +1,8 @@
 # imjang — frontend
 
-> 부동산 현장 방문 기록 웹앱 — 지도 마커, 체크리스트, 타임라인
+부동산 현장 방문 기록 웹앱 — 지도 마커, 체크리스트, 타임라인
 
-[![Live](https://img.shields.io/badge/live-ddangkun.cloud-16a34a?style=flat-square&logo=vercel&logoColor=white)](https://ddangkun.cloud)
-[![API](https://img.shields.io/badge/api-api.ddangkun.cloud-0f766e?style=flat-square&logo=spring&logoColor=white)](https://api.ddangkun.cloud/actuator/health)
+### 🌐 [ddangkun.cloud](https://ddangkun.cloud) &nbsp;·&nbsp; API [api.ddangkun.cloud](https://api.ddangkun.cloud/actuator/health)
 
 ---
 
