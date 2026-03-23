@@ -12,7 +12,7 @@ const PW_RULES = [
   { id: 'upper', label: '영문 대문자 포함', test: (v) => /[A-Z]/.test(v) },
   { id: 'lower', label: '영문 소문자 포함', test: (v) => /[a-z]/.test(v) },
   { id: 'number', label: '숫자 포함', test: (v) => /[0-9]/.test(v) },
-  { id: 'special', label: '특수문자 포함', test: (v) => /[!@#$%^&*(),.?":{}|<>]/.test(v) },
+  { id: 'special', label: '특수문자 포함 (!@#$%^&*)', test: (v) => /[!@#$%^&*(),.?":{}|<>]/.test(v) },
 ];
 
 const SignupPage = () => {
@@ -140,12 +140,12 @@ const SignupPage = () => {
                         {passed ? (
                           <Check size={14} className="text-success" />
                         ) : (
-                          <X size={14} className="text-slate-300" />
+                          <X size={14} className="text-danger" />
                         )}
                         <span
                           className={cn(
                             'text-base',
-                            passed ? 'text-success' : 'text-slate-400'
+                            passed ? 'text-success' : 'text-danger'
                           )}
                         >
                           {rule.label}
