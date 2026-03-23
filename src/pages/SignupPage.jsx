@@ -12,7 +12,15 @@ const PW_RULES = [
   { id: 'upper', label: '영문 대문자 포함', test: (v) => /[A-Z]/.test(v) },
   { id: 'lower', label: '영문 소문자 포함', test: (v) => /[a-z]/.test(v) },
   { id: 'number', label: '숫자 포함', test: (v) => /[0-9]/.test(v) },
-  { id: 'special', label: '특수문자 포함 (!@#$%^&*)', test: (v) => /[!@#$%^&*(),.?":{}|<>]/.test(v) },
+  { id: 'special', label: '특수문자 포함 (@$!%*?&)', test: (v) => /[@$!%*?&]/.test(v) },
+  {
+    id: 'chars',
+    label: (v) => {
+      const invalid = [...new Set(v.replace(/[A-Za-z\d@$!%*?&]/g, '').split(''))].join(' ');
+      return invalid ? `허용되지 않는 문자: ${invalid}` : '허용된 문자만 사용';
+    },
+    test: (v) => /^[A-Za-z\d@$!%*?&]+$/.test(v),
+  },
 ];
 
 const SignupPage = () => {
@@ -35,8 +43,19 @@ const SignupPage = () => {
       navigate('/verify-email', { state: { email: variables.email } });
     },
     onError: (err) => {
-      const msg = err?.response?.data?.message || '회원가입에 실패했어요. 다시 시도해주세요.';
-      setError('root', { message: msg });
+      const data = err?.response?.data;
+      const fieldErrors = data?.errors ?? [];
+      if (fieldErrors.length > 0) {
+        fieldErrors.forEach(({ field, reason }) => {
+          if (field === 'email' || field === 'password') {
+            setError(field, { message: reason });
+          } else {
+            setError('root', { message: reason });
+          }
+        });
+      } else {
+        setError('root', { message: data?.message || '회원가입에 실패했어요. 다시 시도해주세요.' });
+      }
     },
   });
 
@@ -135,6 +154,7 @@ const SignupPage = () => {
                 <div className="mt-2 space-y-1">
                   {PW_RULES.map((rule) => {
                     const passed = rule.test(pwValue);
+                    const label = typeof rule.label === 'function' ? rule.label(pwValue) : rule.label;
                     return (
                       <div key={rule.id} className="flex items-center gap-1.5">
                         {passed ? (
@@ -148,7 +168,7 @@ const SignupPage = () => {
                             passed ? 'text-success' : 'text-danger'
                           )}
                         >
-                          {rule.label}
+                          {label}
                         </span>
                       </div>
                     );
