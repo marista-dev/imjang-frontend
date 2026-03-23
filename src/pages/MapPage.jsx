@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, SlidersHorizontal, MapPin, ImageOff, X, Star } from 'lucide-react';
+import { Search, SlidersHorizontal, MapPin, ImageOff, X } from 'lucide-react';
 import { Drawer } from 'vaul';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { toast } from 'sonner';
@@ -47,22 +47,31 @@ const PRICE_TYPE_FILTERS = [
   { value: 'SALE', label: '매매' },
 ];
 
-const CARD_W = 192;
-const CARD_H = 72;
+const CARD_W = 160;
+const IMG_H  = 86;
+const INFO_H = 88;
+const CARD_H = IMG_H + INFO_H;       // 174
+const ARROW_Y = IMG_H + INFO_H / 2;  // 130
 
 // ─── 미니카드 컴포넌트 ───────────────────────────────────────────────────────
 
 const MiniCard = ({ property, position, onClose, onDetail }) => {
   const { side, x, y } = position;
-  const thumbUrl = property.images?.[0]?.url ?? (property.thumbnailUrl ? getImageUrl(property.thumbnailUrl) : null);
+  const thumbUrl =
+    property.images?.[0]?.url ??
+    (property.thumbnailUrl ? getImageUrl(property.thumbnailUrl) : null);
   const rating = property.rating ?? 0;
-  const ratingColor = rating >= 4 ? '#22C55E' : rating === 3 ? '#F59E0B' : '#EF4444';
+  const ratingColor =
+    rating >= 4 ? '#22C55E' : rating === 3 ? '#F59E0B' : '#EF4444';
 
   const priceInfo = (() => {
     switch (property.priceType) {
       case 'MONTHLY_RENT':
       case 'MONTHLY':
-        return { type: '월세', price: `${formatPrice(property.monthlyRent)}/${formatPrice(property.deposit)}` };
+        return {
+          type: '월세',
+          price: `${formatPrice(property.monthlyRent)}/${formatPrice(property.deposit)}`,
+        };
       case 'JEONSE':
         return { type: '전세', price: formatPrice(property.deposit) };
       case 'SALE':
@@ -72,47 +81,116 @@ const MiniCard = ({ property, position, onClose, onDetail }) => {
     }
   })();
 
+  const arrowStyle = {
+    position: 'absolute',
+    top: ARROW_Y,
+    transform: 'translateY(-50%)',
+    width: 0,
+    height: 0,
+    zIndex: 4,
+    ...(side === 'right'
+      ? {
+          left: -11,
+          borderTop: '10px solid transparent',
+          borderBottom: '10px solid transparent',
+          borderRight: '12px solid #ffffff',
+          filter: 'drop-shadow(-2px 0 3px rgba(0,0,0,0.09))',
+        }
+      : {
+          right: -11,
+          borderTop: '10px solid transparent',
+          borderBottom: '10px solid transparent',
+          borderLeft: '12px solid #ffffff',
+          filter: 'drop-shadow(2px 0 3px rgba(0,0,0,0.09))',
+        }),
+  };
+
   return (
     <div
-      className="absolute z-20 flex cursor-pointer items-center overflow-hidden rounded-xl bg-white"
+      className="absolute z-20 cursor-pointer overflow-visible"
       style={{
         width: CARD_W,
         left: x,
         top: y,
-        boxShadow: '0 2px 12px rgba(0,0,0,0.12), 0 0 0 0.5px rgba(0,0,0,0.04)',
-        animation: `minicard-in-${side} 180ms ease-out both`,
+        animation: `minicard-in-${side} 200ms ease-out both`,
       }}
       onClick={() => onDetail(property.id)}
     >
-      {/* 좌: 사진 — 고정 정사각형 */}
-      <div className="m-1 h-[64px] w-[64px] flex-shrink-0 overflow-hidden rounded-lg">
-        {thumbUrl ? (
-          <img src={thumbUrl} alt="" loading="lazy" className="h-full w-full object-cover" />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center bg-slate-100">
-            <ImageOff size={18} className="text-slate-300" />
-          </div>
-        )}
-      </div>
+      {/* 카드 본체 */}
+      <div
+        className="overflow-hidden rounded-2xl"
+        style={{
+          boxShadow: '0 4px 20px rgba(0,0,0,0.14), 0 0 0 0.5px rgba(0,0,0,0.07)',
+        }}
+      >
+        {/* 상단: 이미지 */}
+        <div className="relative" style={{ height: IMG_H, background: '#c8d8b8' }}>
+          {thumbUrl ? (
+            <img
+              src={thumbUrl}
+              alt=""
+              loading="lazy"
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center">
+              <ImageOff size={20} className="text-white/40" />
+            </div>
+          )}
+          {property.area && (
+            <span
+              className="absolute bottom-2 right-2 rounded-md px-1.5 py-0.5 text-[10px] text-white/90"
+              style={{ background: 'rgba(28,28,30,0.5)' }}
+            >
+              {property.area}평
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onClose(); }}
+            className="absolute right-1.5 top-1.5 flex h-[18px] w-[18px] items-center justify-center rounded-full"
+            style={{ background: 'rgba(28,28,30,0.42)' }}
+          >
+            <X size={9} color="#fff" />
+          </button>
+        </div>
 
-      {/* 우: 정보 — 세로 스택 */}
-      <div className="flex flex-1 flex-col justify-center gap-[2px] overflow-hidden py-2 pl-2.5 pr-2">
-        <span className="text-[11px] font-medium text-slate-400">{priceInfo.type}</span>
-        <span className="truncate text-xs font-bold text-slate-800">{priceInfo.price}</span>
-        <div className="flex items-center gap-0.5">
-          <Star size={11} fill={ratingColor} stroke={ratingColor} />
-          <span className="text-[11px] font-semibold" style={{ color: ratingColor }}>{rating}</span>
+        {/* 하단: 흰 정보란 */}
+        <div className="bg-white px-3 pb-2.5 pt-2" style={{ height: INFO_H }}>
+          <p className="truncate text-sm font-semibold text-[#1c1c1e]" style={{ letterSpacing: '-0.3px' }}>
+            {getDongName(property.address)}
+          </p>
+          <div className="mt-0.5 flex items-baseline gap-1">
+            <span className="text-[11px] text-[#8e8e93]">{priceInfo.type}</span>
+            <span
+              className="font-bold text-[#1c1c1e]"
+              style={{ fontSize: 15, letterSpacing: '-0.4px' }}
+            >
+              {priceInfo.price}
+            </span>
+          </div>
+          <div className="mt-1.5 flex items-center gap-1.5">
+            <div
+              className="h-[6px] w-[6px] flex-shrink-0 rounded-full"
+              style={{ background: ratingColor }}
+            />
+            <span className="text-[11px] font-semibold" style={{ color: ratingColor }}>
+              {rating}
+            </span>
+            {property.floor && (
+              <>
+                <div className="h-[9px] w-px bg-[#e5e5ea]" />
+                <span className="text-[11px] text-[#8e8e93]">
+                  {property.floor}/{property.totalFloors || '?'}층
+                </span>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* X 닫기 — 카드 우상단 */}
-      <button
-        type="button"
-        onClick={(e) => { e.stopPropagation(); onClose(); }}
-        className="absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-black/10"
-      >
-        <X size={9} className="text-slate-400" />
-      </button>
+      {/* 화살표 */}
+      <div style={arrowStyle} />
     </div>
   );
 };
@@ -196,20 +274,25 @@ const MapPage = () => {
     const overflow = side === 'right'
       ? Math.max(0, cardXRaw + CARD_W + PAD - mapW)
       : Math.max(0, -cardXRaw + PAD);
-    const cardYRaw = my - CARD_H / 2;
+    const cardYRaw = my - ARROW_Y;
     const overflowTop = Math.max(0, 48 - cardYRaw);
     const overflowBottom = Math.max(0, cardYRaw + CARD_H + 8 - mapH);
     const panX = side === 'right' ? overflow : -overflow;
     const panY = overflowTop > 0 ? -overflowTop : overflowBottom;
 
     if (panX !== 0 || panY !== 0) {
-      map.panBy(panX, panY);
+      const currentCenter = map.getCenter();
+      const proj2 = map.getProjection();
+      const currentPoint = proj2.containerPointFromCoords(currentCenter);
+      const newCenterPoint = new window.kakao.maps.Point(currentPoint.x + panX, currentPoint.y + panY);
+      const newCenter = proj2.coordsFromContainerPoint(newCenterPoint);
+      map.panTo(newCenter);
       setTimeout(() => {
         const newPoint = proj.containerPointFromCoords(latlng);
         const nx = newPoint.x;
         const ny = newPoint.y;
         const cardX = side === 'right' ? nx + GAP : nx - CARD_W - GAP;
-        const cardY = Math.max(48, Math.min(ny - CARD_H / 2, mapH - CARD_H - 8));
+        const cardY = Math.max(48, Math.min(ny - ARROW_Y, mapH - CARD_H - 8));
         const property = normalizeProperty(p);
         setMiniCard({ property, position: { side, x: cardX, y: cardY } });
       }, 300);
