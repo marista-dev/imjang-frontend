@@ -6,7 +6,7 @@ export const imageApi = {
     const formData = new FormData();
     formData.append('image', file);
     return api.post('/images/upload', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
+      headers: { 'Content-Type': undefined },
     });
   },
 
@@ -15,7 +15,7 @@ export const imageApi = {
     const formData = new FormData();
     formData.append('image', file);
     return api.post(`/properties/${propertyId}/images`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
+      headers: { 'Content-Type': undefined },
     });
   },
 
