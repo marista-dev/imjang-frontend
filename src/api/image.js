@@ -10,14 +10,9 @@ export const imageApi = {
     });
   },
 
-  // 매물에 이미지 추가
-  addToProperty: (propertyId, file) => {
-    const formData = new FormData();
-    formData.append('image', file);
-    return api.post(`/properties/${propertyId}/images`, formData, {
-      headers: { 'Content-Type': undefined },
-    });
-  },
+  // 매물에 이미지 연결 (tempImageIds: 업로드된 임시 이미지 ID 배열)
+  addToProperty: (propertyId, tempImageIds) =>
+    api.post(`/properties/${propertyId}/images`, { tempImageIds }),
 
   // 매물 이미지 삭제
   deleteFromProperty: (propertyId, imageId) =>
